@@ -86,21 +86,26 @@ docker compose exec -T db psql -U postgres -d postgres -c "
   insert into workgroups (key, name) values ('mein-projekt', 'Mein Projekt');
 "
 
-# 2) Nutzer registrieren (löst Bestätigungsmail an Mailpit aus)
+# 2) Einladung eintragen - ohne diesen Schritt blockt gate_new_user_signup()
+#    jede Registrierung (siehe "Einladungs-gesteuerte Selbstregistrierung"
+#    unten) auch für den allerersten Nutzer
+docker compose exec -T db psql -U postgres -d postgres -c "
+  insert into pending_invites (workgroup_id, email, rolle)
+  select id, 'admin@beispiel.local', 'admin' from workgroups where key='mein-projekt';
+"
+
+# 3) Nutzer registrieren (löst Bestätigungsmail an Mailpit aus)
 curl -X POST http://localhost:9999/signup -H "Content-Type: application/json" \
   -d '{"email":"admin@beispiel.local","password":"ein-sicheres-passwort"}'
 
-# 3) Bestätigungscode aus Mailpit holen (http://localhost:8026) und verifizieren
+# 4) Bestätigungscode aus Mailpit holen (http://localhost:8026) und verifizieren
 curl -X POST http://localhost:9999/verify -H "Content-Type: application/json" \
   -d '{"type":"signup","email":"admin@beispiel.local","token":"<code aus Mailpit>"}'
-
-# 4) Mitgliedschaft als admin in der neuen Workgroup anlegen
-docker compose exec -T db psql -U postgres -d postgres -c "
-  insert into memberships (user_id, workgroup_id, rolle)
-  select id, (select id from workgroups where key='mein-projekt'), 'admin'
-  from auth.users where email='admin@beispiel.local';
-"
 ```
+
+Die Mitgliedschaft als `admin` entsteht danach automatisch (Trigger
+`provision_membership_from_invite`, verbraucht die Einladung aus Schritt 2)
+— kein weiterer manueller Schritt nötig.
 
 Danach im Editor (`editor-db/index.html`) unter „Dimensionen" die ersten
 Dimensionen (z.B. Kategorien/Klassifikationen für die eigenen Einträge)
