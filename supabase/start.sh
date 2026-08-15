@@ -37,6 +37,8 @@ fi
 source .env
 DB_PORT="${DB_PORT:-5435}"
 REST_PORT="${REST_PORT:-8001}"
+AUTH_PORT="${AUTH_PORT:-9999}"
+MAILPIT_PORT="${MAILPIT_PORT:-8026}"
 
 # ── Docker-Stack ─────────────────────────────────────────────────────
 echo "==> Postgres + Mailpit starten ..."
@@ -49,7 +51,7 @@ echo "==> GoTrue (Auth) starten ..."
 docker compose up -d auth
 
 echo "==> Warte auf GoTrue ..."
-until curl -s -o /dev/null "http://localhost:9999/settings"; do sleep 1; done
+until curl -s -o /dev/null "http://localhost:${AUTH_PORT}/settings"; do sleep 1; done
 
 echo "==> post-auth-init.sql einspielen (Rollen-Default/-Trigger, idempotent) ..."
 docker compose exec -T db psql -U postgres -d postgres -v ON_ERROR_STOP=1 < post-auth-init.sql > /dev/null
@@ -86,7 +88,7 @@ Fertig! Stack läuft:
 
   Viewer:   http://localhost:${STATIC_PORT}/viewer-db/
   Editor:   http://localhost:${STATIC_PORT}/editor-db/
-  Mailpit:  http://localhost:8026  (Bestätigungscodes für Magic-Link)
+  Mailpit:  http://localhost:${MAILPIT_PORT}  (Bestätigungscodes für Magic-Link)
 
 Noch keine Workgroup/kein Nutzer angelegt — siehe README.md, Abschnitt
 "Erste Workgroup anlegen", für den einmaligen manuellen Einrichtungsschritt.
