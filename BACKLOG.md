@@ -15,6 +15,8 @@ gleichzeitig erfolgreich.
   siehe Abschnitt „Instanzen auf inabox.lan" oben); veralteter Quellverweis in
   `dev-notes/ops/server-landschaft.md` korrigiert
 - open-starcore_D01 bestätigt: bleibt vorerst Heimnetz-only, kein Umsetzungsbedarf heute
+- Dritte Instanz „Kommunikationswege" auf `inabox.lan` aufgesetzt und mit Erstdaten aus Excel
+  befüllt (17 Use-Cases), siehe Abschnitt „Instanzen auf inabox.lan" unten
 
 ---
 
@@ -38,9 +40,35 @@ untereinander, nicht mit anderen Projekten auf anderen Hosts — deshalb hier st
 |---|---|---|---|---|---|---|
 | AK-Patientenportale | „Patientenpfad" | 5435 | 8001 | 9999 | 8026 | 8095 |
 | euviaio-Ausfallszenarien | „Euviaio Ausfallszenarien" | 5436 | 8002 | 9998 | 8027 | 8096 |
+| Kommunikationswege (Arbeitstitel) | „Kommunikationswege" | 5437 | 8003 | 9997 | 8028 | 8097 |
 
-(Defaults aus `supabase/README.md`, Abschnitt „Ports"; zweite Instanz nutzt jeweils Default+1
-über `.env`.)
+(Defaults aus `supabase/README.md`, Abschnitt „Ports"; jede weitere Instanz zählt die Ports um
++1 hoch über `.env`.)
+
+### Kommunikationswege (angelegt 2026-09-04)
+
+Neuer Anwendungsfall: Kommunikationswege zwischen Patienten/Mitarbeitenden/externen Profis
+(Krankenhaus-Kontext), Erstdaten aus `Use-Cases_Kommunikation_kommentiert.xlsx` (17 Use-Cases,
+10 Kategorien). Checkout `~/kommunikationswege` auf `inabox`, Workgroup-Key
+`kommunikationswege`, Admin-Login `admin@kommunikationswege.local` (Passwort in KeePass des
+Nutzers).
+
+**Dimensionen:** `phase` (vor/während/nach Aufenthalt, Navigationsachse — Nutzerentscheidung:
+zeitliche Trennung statt/zusätzlich zur Akteurs-Paarung), `kommunikationsweg` (Patient↔Mitarbeitende
+/ Mitarbeitende↔Mitarbeitende / Mitarbeitende↔Externe Profis — die urspr. angefragte 3er-Einteilung,
+jetzt zweite Achse statt Tab-Leiste), `kategorie` (die 10 Excel-Kategorien), `use_case_id`,
+`beteiligte`, `beschreibung` (alle drei text, 1:1 aus Excel), `kanal_praeferiert`/`kanal_alternativ`
+(aus den beiden Kanal-Spalten; Tippfehler „Portalle" zu „Portale" normalisiert).
+
+**Phase/Kommunikationsweg sind ein Erstvorschlag des Modells, kein Excel-Feld** — im Editor prüfen,
+besonders Use-Case 4.1 (Beteiligte: „Krankenhaus-Kliniksystem → Patient/Nachsorger", als
+Patient↔Mitarbeitende vorklassifiziert, Nachsorger-Anteil eigentlich extern) und 5.1 (Beteiligte:
+„Patient/Zuweiser ↔ Krankenhaus", Zuweiser-Anteil eigentlich Mitarbeitende↔Extern).
+
+**Offener Punkt aus der Excel (Kommentar von Anna-Antonia Pape an Spalte „Beteiligte"):** ggf.
+eigene Spalte/Dimension für den Prozess-Initiator ergänzen — noch nicht umgesetzt, Rücksprache
+mit dem Nutzer nötig. Die Excel nennt außerdem unter „Lücken sind vorhanden:" zwei noch leere
+Punkte (nicht importiert, da inhaltsleer).
 
 ## Offene Fragen / Entscheidungen
 
