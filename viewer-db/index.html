@@ -149,6 +149,10 @@
        desselben Schritts hervor und dimmt den Rest, analog zum Original. */
     .matrix-step-chip.highlighted { outline: 2px solid currentColor; font-weight: 700; filter: brightness(0.92); }
     .matrix-step-chip.dimmed-by-hover { opacity: 0.25; }
+    /* Persistentes Ausblenden durch aktive Toolbar-Filter (analog .prozess-card.dimmed) —
+       eigene Klasse statt dimmed-by-hover, da letztere nur den temporären Cross-Highlight-
+       Hoverzustand markiert. */
+    .matrix-step-chip.dimmed { opacity: 0.25; pointer-events: none; }
     .matrix-wrap { overflow-x: auto; }
 
     .search-input {
@@ -718,14 +722,20 @@
     return haystack.includes(q);
   }
 
-  // ── Sichtbarkeit (Dimmen) über die Nav-Multi-/zusätzliche Nav-Single-Filter ──
+  // ── Sichtbarkeit (Dimmen) über die Nav-Multi-/Nav-Single-Filter ──
+  // Läuft bewusst über das volle navSingle (nicht nur extraNavSingle), damit auch die
+  // Phase-Tab-Auswahl selbst (sectionDim) hier mitzählt — sonst ignoriert z.B. die
+  // Matrix-Ansicht (die render() nicht über die Sections partitioniert, siehe unten)
+  // die aktive Phase komplett. Für die Kartenansicht ist das ein No-op: dort werden
+  // Karten schon vorab per sections auf den aktiven sectionDim-Wert eingeschränkt, der
+  // Check hier ist für sie also immer schon erfüllt.
   function isDimmedByNav(d) {
     for (const dim of navMulti) {
       const active = activeNavMulti[dim.key];
       const stepVals = (d.values[dim.key] || []).map(v => v.key);
       if (!stepVals.some(v => active.has(v))) return true;
     }
-    for (const dim of extraNavSingle) {
+    for (const dim of navSingle) {
       const active = activeNavSingle[dim.key];
       if (active !== 'alle') {
         const stepVal = (d.values[dim.key] || [])[0]?.key;
@@ -855,14 +865,19 @@
     const chipFor = d => {
       const sectionValue = sectionDim ? (d.values[sectionDim.key] || [])[0] : null;
       const style = sectionValue ? `style="border-left-color:${colorOf(sectionValue)};"` : '';
-      return `<button type="button" class="matrix-step-chip" ${style} data-nr="${d.nr}" onclick="openFromMatrix(${d.nr})">#${String(d.nr).padStart(2, '0')} ${escapeHtml(d.titel)}</button>`;
+      const dimmedCls = isDimmed(d) ? ' dimmed' : '';
+      return `<button type="button" class="matrix-step-chip${dimmedCls}" ${style} data-nr="${d.nr}" onclick="openFromMatrix(${d.nr})">#${String(d.nr).padStart(2, '0')} ${escapeHtml(d.titel)}</button>`;
     };
 
     const head = `<tr><th></th>${yDim.values.map(yv => `<th>${escapeHtml(yv.label)}</th>`).join('')}</tr>`;
     const body = xDim.values.map(xv => {
       const cells = yDim.values.map(yv => {
         const steps = stepsFor(xv, yv);
-        return `<td class="${steps.length ? 'matrix-hit' : ''}">${steps.map(chipFor).join('')}</td>`;
+        // Zellhintergrund (matrix-hit) markiert nur Zellen mit mind. einem tatsächlich
+        // sichtbaren (nicht durch Toolbar-Filter gedimmten) Treffer — gedimmte Chips
+        // bleiben sichtbar (Konsistenz mit der Kartenansicht: Filter blenden aus, nicht weg).
+        const hasVisibleHit = steps.some(d => !isDimmed(d));
+        return `<td class="${hasVisibleHit ? 'matrix-hit' : ''}">${steps.map(chipFor).join('')}</td>`;
       }).join('');
       return `<tr><th>${escapeHtml(xv.label)}</th>${cells}</tr>`;
     }).join('');
@@ -889,8 +904,10 @@
     }
 
     if (view === 'matrix') {
+      const matrixVisible = data.filter(matchesSearch);
+      const matrixVisibleCount = matrixVisible.filter(d => !isDimmed(d)).length;
       document.getElementById('counter').innerHTML =
-        `<strong>${data.filter(matchesSearch).length} von ${data.length}</strong> Einträgen in der Matrix`;
+        `<strong>${matrixVisibleCount} von ${data.length}</strong> Einträgen in der Matrix`;
       document.getElementById('karten').innerHTML = renderMatrix();
       return;
     }
