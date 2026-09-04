@@ -25,7 +25,7 @@ gleichzeitig erfolgreich.
 | ID | Aufgabe | Priorität | Status |
 |----|---------|-----------|--------|
 | open-starcore_D01 | Kein HTTPS/Reverse-Proxy vor den `inabox.lan`-Instanzen — für reinen Heimnetz-Zugriff aktuell akzeptabel, vor Fernzugriff/AG-Freigabe zu klären | Mittel | 📋 Offen (2026-09-04 bestätigt: bleibt vorerst Heimnetz-only, kein konkreter Anlass für Fernzugriff) |
-| open-starcore_D02 | CLAUDE.md nutzt noch nicht das aktuelle `@`-Import-Muster für `dev-notes/STANDARDS.md` (Muster geerbt von `INA-ePA-und-Patientenportale`, vordatiert die Konvention) — bei Gelegenheit auf aktuelles Template angleichen | Niedrig | 📋 Offen |
+| open-starcore_D02 | CLAUDE.md nutzt noch nicht das aktuelle `@`-Import-Muster für `dev-notes/STANDARDS.md` (Muster geerbt von `INA-ePA-und-Patientenportale`, vordatiert die Konvention) — bei Gelegenheit auf aktuelles Template angleichen | Niedrig | ✅ Erledigt (2026-09-04) — Abschnitt „Automatisch geladene Dateien (via `@`-Import)" ergänzt (`BACKLOG.md`/`CHANGELOG.md`/`README.md`/`dev-notes/projects/open-starcore.md`/`dev-notes/STANDARDS.md`), analog zu `handbuch-wiki`/`ird-projektplan`; redundante Prosa in „Hub-Zugehörigkeit" entfernt |
 
 ---
 

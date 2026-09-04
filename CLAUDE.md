@@ -3,9 +3,9 @@
 ## Hub-Zugehörigkeit
 
 Dieses Projekt ist Teil des `dev-notes`-Hub-Systems (`~/git_repos/dev-notes`,
-`dev-notes/STANDARDS.md` §1–§4) — Session startet dort, Übergabe am Ende dorthin. Details:
-`dev-notes/projects/open-starcore.md`. `BACKLOG.md` in diesem Repo zuerst lesen (letzter
-Stand, offene Punkte); `CHANGELOG.md` erklärt, warum dieses Projekt bewusst keins aktiv pflegt.
+`dev-notes/STANDARDS.md` §1–§4) — Session startet dort, Übergabe am Ende dorthin. Die relevanten
+Hub-/Projektdateien werden automatisch per `@`-Import geladen, siehe Abschnitt „Automatisch
+geladene Dateien" ganz unten.
 
 **Abweichung vom Hub-Standard (bewusst, geerbt von `INA-ePA-und-Patientenportale`, aus dem
 dieses Repo ausgegliedert wurde):** `dev-notes/STANDARDS.md` verlangt global englische
@@ -79,3 +79,16 @@ Produktnamen.
 - Änderungen am Datenmodell (Migrationen) immer mit dem Nutzer abstimmen,
   bevor umgesetzt wird — RLS-Policies/Trigger betreffen alle laufenden
   Instanzen, die von diesem Repo aus aktualisiert werden
+
+---
+
+## Automatisch geladene Dateien (via `@`-Import)
+
+- @BACKLOG.md — **zuerst lesen**: letzter Stand, offene Punkte
+- @CHANGELOG.md — expliziter Verzicht-Vermerk (dieses Projekt pflegt keins aktiv, siehe Datei)
+- @README.md — Projektübersicht, Datenmodell-Kurzfassung
+- @~/git_repos/dev-notes/projects/open-starcore.md — Hub-Projektkontext (letzter Stand,
+  nächster Schritt, offene Fragen)
+- @~/git_repos/dev-notes/STANDARDS.md — verbindlicher, projektübergreifender Arbeitsablauf
+  (Hub-Regelwerk; externer Import außerhalb dieses Projekts — Claude Code zeigt beim allerersten
+  Laden einen einmaligen Genehmigungsdialog, danach automatisch)
