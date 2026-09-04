@@ -1,5 +1,17 @@
 # CLAUDE.md – Arbeitsanweisungen für Claude Code
 
+## Hub-Zugehörigkeit
+
+Dieses Projekt ist Teil des `dev-notes`-Hub-Systems (`~/git_repos/dev-notes`,
+`dev-notes/STANDARDS.md` §1–§4) — Session startet dort, Übergabe am Ende dorthin. Details:
+`dev-notes/projects/open-starcore.md`. `BACKLOG.md` in diesem Repo zuerst lesen (letzter
+Stand, offene Punkte); `CHANGELOG.md` erklärt, warum dieses Projekt bewusst keins aktiv pflegt.
+
+**Abweichung vom Hub-Standard (bewusst, geerbt von `INA-ePA-und-Patientenportale`, aus dem
+dieses Repo ausgegliedert wurde):** `dev-notes/STANDARDS.md` verlangt global englische
+Commit-Messages — dieses Repo (wie sein Ursprungsrepo) committet bewusst auf Deutsch, siehe
+unten. Nicht ohne Rücksprache angleichen.
+
 ## Sprache
 Alle Ausgaben, Commit-Messages, Kommentare und Dokumente auf Deutsch.
 
