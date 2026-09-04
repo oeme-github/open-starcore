@@ -153,12 +153,27 @@ python3 -m http.server 8095
 
 Im Editor (`editor-db/index.html`) zwischen „Einträge" und „Dimensionen"
 umschalten (Sidebar-Tabs). Dort lassen sich neue Dimensionen anlegen
-(Key/Label/Typ/Reihenfolge/Farbe/Navigationsachse) sowie bestehende
-bearbeiten/löschen, und die Werte einer Dimension pflegen (bearbeiten/
-löschen, nicht nur ergänzen wie im Eintrags-Formular). Dimensionen
-anlegen/ändern/löschen erfordert laut Schema die Rolle `admin`, nicht nur
-`editor` (`"Admins verwalten Dimensionen"`-Policy) — mit `editor` bleibt nur
-die Werte-Pflege innerhalb bestehender Dimensionen möglich.
+(Key/Label/Typ/Reihenfolge/Farbe/Navigationsachse/Filterbar) sowie
+bestehende bearbeiten/löschen, und die Werte einer Dimension pflegen
+(bearbeiten/löschen, nicht nur ergänzen wie im Eintrags-Formular).
+Dimensionen anlegen/ändern/löschen erfordert laut Schema die Rolle
+`admin`, nicht nur `editor` (`"Admins verwalten Dimensionen"`-Policy) — mit
+`editor` bleibt nur die Werte-Pflege innerhalb bestehender Dimensionen
+möglich.
+
+**Navigationsachse vs. Filterbar:** Nur die *erste* `single_select`-
+Dimension mit Navigationsachse (`sectionDim`) sektioniert den Viewer
+(eigene Tab-Leiste + betitelte Abschnitte in der Kartenansicht). Weitere
+Navigationsachsen wirken nur noch wie Filter (Tab-Leiste/Toggle-Chips),
+bekommen aber zusätzlich automatisch ein Badge auf jeder Karte. Filterbar
+(`ist_filterbar`, unabhängig von Navigationsachse) erzeugt denselben
+Filter, ohne Seite zu sektionieren oder ein Karten-Badge zu ergänzen — die
+richtige Wahl für zusätzliche Filter, die die Kartendarstellung nicht
+verändern sollen. Beide Felder sind nur für `single_select`/`multi_select`
+vorgesehen und im Editor bei `typ=text` ausgeblendet (eine
+Text-Dimension mit gesetztem Navigationsachse- oder Filterbar-Flag würde
+sonst ohne jede UI-Rückmeldung aus dem Viewer verschwinden, siehe
+`detailDims` in `viewer-db/index.html`).
 
 ## Mitglieder-Verwaltung im Editor
 
