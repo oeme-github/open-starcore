@@ -65,10 +65,13 @@ besonders Use-Case 4.1 (Beteiligte: „Krankenhaus-Kliniksystem → Patient/Nach
 Patient↔Mitarbeitende vorklassifiziert, Nachsorger-Anteil eigentlich extern) und 5.1 (Beteiligte:
 „Patient/Zuweiser ↔ Krankenhaus", Zuweiser-Anteil eigentlich Mitarbeitende↔Extern).
 
-**Offener Punkt aus der Excel (Kommentar von Anna-Antonia Pape an Spalte „Beteiligte"):** ggf.
-eigene Spalte/Dimension für den Prozess-Initiator ergänzen — noch nicht umgesetzt, Rücksprache
-mit dem Nutzer nötig. Die Excel nennt außerdem unter „Lücken sind vorhanden:" zwei noch leere
-Punkte (nicht importiert, da inhaltsleer).
+**Nachtrag 2026-09-04:** Initiator-Dimension ergänzt (Kommentar von Anna-Antonia Pape an Spalte
+„Beteiligte", s.o.) — neue Dimension `initiator` (text, Reihenfolge 6, direkt nach „Beteiligte"),
+noch ohne Werte (wie bei den bestehenden Use-Cases üblich, erst bei Bedarf befüllen). Die beiden
+leeren „Lücken sind vorhanden"-Punkte aus der Excel wurden dagegen verworfen — der Nutzer hat
+stattdessen selbst drei neue Dimensionen `ist`/`soll`/`gap` (Ist-Zustand/Soll-Zustand/Lücke
+Ist-Soll) angelegt und exemplarisch bei Use-Case 1.1 befüllt; weitere Use-Cases folgen bei
+Bedarf direkt im Editor.
 
 ## Offene Fragen / Entscheidungen
 
