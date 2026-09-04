@@ -175,6 +175,10 @@
       display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 600;
       background: #FEF3C7; color: #78350F; border: 1px solid #FCD34D; margin-left: 4px; flex-shrink: 0;
     }
+    .filter-badge {
+      display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 600;
+      background: #DBEAFE; color: #1E40AF; border: 1px solid #93C5FD; margin-left: 4px; flex-shrink: 0;
+    }
     /* T12: Rollen-Badge in der Mitgliederliste, Farben analog zu bestehenden
        Badges (editor wie .badge-role, admin wie .badge-proto/.nav-badge). */
     .role-badge {
@@ -380,6 +384,9 @@
         </div>
         <div class="field">
           <label class="checkbox-inline"><input type="checkbox" id="dim-field-nav"> Navigationsachse (Tab-Leiste bzw. Toggle-Filter im Viewer)</label>
+        </div>
+        <div class="field" id="dim-field-filterbar-wrap">
+          <label class="checkbox-inline"><input type="checkbox" id="dim-field-filterbar"> Filterbar (eigene Filterzeile im Viewer)</label>
         </div>
 
         <div id="dimension-values-section" class="field" style="display:none;">
@@ -785,7 +792,8 @@
   async function persistDimensionOrder() {
     const payload = dims.map((d, i) => ({
       id: d.id, workgroup_id: workgroup.id, key: d.key, label: d.label, typ: d.typ,
-      ist_navigationsachse: d.ist_navigationsachse, farbe: d.farbe ?? null, reihenfolge: i + 1,
+      ist_navigationsachse: d.ist_navigationsachse, ist_filterbar: d.ist_filterbar,
+      farbe: d.farbe ?? null, reihenfolge: i + 1,
     }));
     const res = await apiFetch('/dimensions?on_conflict=id', {
       method: 'POST',
@@ -971,6 +979,7 @@
         <span class="titel">${escapeHtml(d.label)}</span>
         <span class="typ-badge">${d.typ}</span>
         ${d.ist_navigationsachse ? '<span class="nav-badge">Nav</span>' : ''}
+        ${d.ist_filterbar ? '<span class="filter-badge">Filter</span>' : ''}
       </div>`).join('') || '<div class="empty-hint">Noch keine Dimensionen.</div>';
 
     // E05: das (weiterhin einzige) #dimension-form-Element direkt hinter die
@@ -1026,6 +1035,11 @@
   function toggleDimensionValuesSection() {
     const typ = document.getElementById('dim-field-typ').value;
     document.getElementById('dimension-values-section').style.display = typ === 'text' ? 'none' : 'block';
+    // "Filterbar" ist nur für single_select/multi_select vorgesehen (Freitext bleibt über die
+    // Suche abgedeckt) — bei text ausblenden und ein stehen gebliebenes true nicht stillschweigend
+    // mitspeichern.
+    document.getElementById('dim-field-filterbar-wrap').style.display = typ === 'text' ? 'none' : 'block';
+    if (typ === 'text') document.getElementById('dim-field-filterbar').checked = false;
   }
 
   function renderDimensionForm(dimId, draft) {
@@ -1044,6 +1058,7 @@
     document.getElementById('dim-field-reihenfolge').value = dim?.reihenfolge ?? draft?.reihenfolge ?? 1;
     document.getElementById('dim-field-farbe').value = dim?.farbe ?? '#94a3b8';
     document.getElementById('dim-field-nav').checked = !!dim?.ist_navigationsachse;
+    document.getElementById('dim-field-filterbar').checked = !!dim?.ist_filterbar;
 
     document.getElementById('dim-field-typ').onchange = toggleDimensionValuesSection;
     toggleDimensionValuesSection();
@@ -1073,6 +1088,7 @@
         reihenfolge: Number(document.getElementById('dim-field-reihenfolge').value) || 1,
         farbe: document.getElementById('dim-field-farbe').value,
         ist_navigationsachse: document.getElementById('dim-field-nav').checked,
+        ist_filterbar: document.getElementById('dim-field-filterbar').checked,
       };
 
       if (currentDimId) {
@@ -1082,6 +1098,7 @@
           body: JSON.stringify({
             label: payload.label, typ: payload.typ, reihenfolge: payload.reihenfolge,
             farbe: payload.farbe, ist_navigationsachse: payload.ist_navigationsachse,
+            ist_filterbar: payload.ist_filterbar,
           }),
         });
         if (!res.ok) throw new Error(`Speichern fehlgeschlagen (HTTP ${res.status}). ${httpErrorHint(res.status, 'admin')}`);
@@ -1134,7 +1151,7 @@
 
   async function reloadDimensions() {
     const dimsRes = await apiFetch(
-      `/dimensions?select=id,key,label,typ,ist_navigationsachse,reihenfolge,farbe,dimension_values(id,key,label,farbe,gruppe,reihenfolge)` +
+      `/dimensions?select=id,key,label,typ,ist_navigationsachse,ist_filterbar,reihenfolge,farbe,dimension_values(id,key,label,farbe,gruppe,reihenfolge)` +
       `&workgroup_id=eq.${workgroup.id}&order=reihenfolge&dimension_values.order=reihenfolge`
     );
     dims = (await dimsRes.json()).map(d => ({ ...d, values: d.dimension_values }));

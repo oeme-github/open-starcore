@@ -360,6 +360,11 @@
   let detailDims = [];            // alles andere (weitere multi_select + alle text-Dimensionen): nur in der Detailansicht
   let groupDims = [];             // Nicht-Nav multi_select-Dimensionen mit mind. einem gruppierten Wert (V02/V03)
   let activeGroups = {};          // { [dimKey]: Set(gruppenName) }
+  let filterSingleDims = [];      // Nicht-Nav single_select-Dimensionen mit ist_filterbar → eigene Tab-Filterzeile
+  let filterMultiDims = [];       // Nicht-Nav multi_select-Dimensionen mit ist_filterbar → eigene Toggle-Filterzeile
+  let activeFilterSingle = {};    // { [dimKey]: 'alle' | valueKey }
+  let activeFilterMulti = {};     // { [dimKey]: Set(valueKey) }
+  let textDimKeys = [];           // alle typ='text'-Dimension-Keys, für die generische Freitextsuche
 
   let activeNavSingle = {};       // { [dimKey]: 'alle' | valueKey }
   let activeNavMulti = {};        // { [dimKey]: Set(valueKey) }
@@ -378,7 +383,7 @@
   // aus dimensions/dimension_values statt hart codiert) ───────────────
   async function loadDimensions() {
     const res = await fetch(
-      `${REST_URL}/dimensions?select=id,key,label,typ,ist_navigationsachse,reihenfolge,dimension_values(key,label,farbe,gruppe,reihenfolge)` +
+      `${REST_URL}/dimensions?select=id,key,label,typ,ist_navigationsachse,ist_filterbar,reihenfolge,dimension_values(key,label,farbe,gruppe,reihenfolge)` +
       `&order=reihenfolge&dimension_values.order=reihenfolge`,
       { headers: { Authorization: `Bearer ${getToken()}` } }
     );
@@ -390,6 +395,7 @@
   function setupDimensions(loadedDims) {
     dims = loadedDims.map(d => ({ ...d, values: d.dimension_values }));
     dimsByKey = Object.fromEntries(dims.map(d => [d.key, d]));
+    textDimKeys = dims.filter(d => d.typ === 'text').map(d => d.key);
 
     const navDims = dims.filter(d => d.ist_navigationsachse);
     navSingle = navDims.filter(d => d.typ === 'single_select');
@@ -421,6 +427,17 @@
       const groups = [...new Set(dim.values.map(v => v.gruppe || 'Sonstige'))];
       return [dim.key, new Set(groups)];
     }));
+
+    // Generisches Filter-Opt-in (ist_filterbar) — unabhängig von Nav-Achsen und bewusst NICHT
+    // in navSingle/navMulti gemischt, da diese auch die Karten-Badges (navBadges in renderCard)
+    // speisen; eine nur-filterbare Dimension soll dort keinen zusätzlichen Badge bekommen (sie
+    // hat ja schon ihren Kopf-Chip/Preview-Chip). Setzt eine Dimension zusätzlich
+    // ist_navigationsachse, gewinnt das für die Toolbar (sie landet gar nicht in
+    // nonNavSelectDims) — ist_filterbar ist dann ein No-op.
+    filterSingleDims = nonNavSelectDims.filter(d => d.typ === 'single_select' && d.ist_filterbar);
+    filterMultiDims = nonNavSelectDims.filter(d => d.typ === 'multi_select' && d.ist_filterbar);
+    activeFilterSingle = Object.fromEntries(filterSingleDims.map(d => [d.key, 'alle']));
+    activeFilterMulti = Object.fromEntries(filterMultiDims.map(d => [d.key, new Set(d.values.map(v => v.key))]));
 
     const axisDims = dims.filter(d => d.typ !== 'text');
     matrixX = previewSingleDims[0]?.key || axisDims[0]?.key || null;
@@ -532,6 +549,24 @@
       rows.push(`<div class="filter-row"><span class="filter-label">${escapeHtml(dim.label)} (Gruppe)</span>${toggles.join('')}</div>`);
     }
 
+    // Generische Filterzeilen für ist_filterbar-Dimensionen (eigener data-fdim-Selektor statt
+    // data-dim, damit setNavSingle/toggleNavMulti diese Buttons nicht versehentlich mittreffen).
+    for (const dim of filterSingleDims) {
+      const tabs = [`<button class="phase-tab active" data-fdim="${dim.key}" data-val="alle" onclick="setFilterSingle('${dim.key}','alle')">Alle</button>`]
+        .concat(dim.values.map(v => `
+          <button class="phase-tab" data-fdim="${dim.key}" data-val="${v.key}" onclick="setFilterSingle('${dim.key}','${v.key}')">
+            <span class="dot" style="background:${colorOf(v)}"></span>${escapeHtml(v.label)}
+          </button>`));
+      rows.push(`<div class="filter-row"><span class="filter-label">${escapeHtml(dim.label)}</span>${tabs.join('')}</div>`);
+    }
+
+    for (const dim of filterMultiDims) {
+      const toggles = dim.values.map(v => `
+        <button class="dr-toggle active" data-fdim="${dim.key}" data-val="${v.key}" style="${chipStyle(colorOf(v))}"
+                onclick="toggleFilterMulti('${dim.key}','${v.key}')">${escapeHtml(v.label)}</button>`);
+      rows.push(`<div class="filter-row"><span class="filter-label">${escapeHtml(dim.label)}</span>${toggles.join('')}</div>`);
+    }
+
     document.getElementById('toolbar-nav-rows').innerHTML = rows.join('');
 
     const axisDims = dims.filter(d => d.typ !== 'text');
@@ -565,6 +600,22 @@
     if (set.has(group)) set.delete(group); else set.add(group);
     document.querySelector(`.dr-toggle[data-group-dim="${dimKey}"][data-group="${CSS.escape(group)}"]`)
       .classList.toggle('active', set.has(group));
+    render();
+  }
+
+  function setFilterSingle(dimKey, value) {
+    activeFilterSingle[dimKey] = value;
+    document.querySelectorAll(`.phase-tab[data-fdim="${dimKey}"]`).forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.val === value);
+    });
+    render();
+  }
+
+  function toggleFilterMulti(dimKey, valueKey) {
+    const set = activeFilterMulti[dimKey];
+    if (set.has(valueKey)) set.delete(valueKey); else set.add(valueKey);
+    document.querySelector(`.dr-toggle[data-fdim="${dimKey}"][data-val="${valueKey}"]`)
+      .classList.toggle('active', set.has(valueKey));
     render();
   }
 
@@ -657,11 +708,10 @@
     return safe.replace(new RegExp(`(${escTerm})`, 'ig'), '<mark>$1</mark>');
   }
 
-  const SEARCH_DIM_KEYS = ['akteur', 'objekt', 'detail', 'gesetz', 'standard'];
   function matchesSearch(d) {
     if (!searchTerm) return true;
     const q = searchTerm.toLowerCase();
-    const haystack = [d.titel, ...SEARCH_DIM_KEYS.flatMap(k => {
+    const haystack = [d.titel, ...textDimKeys.flatMap(k => {
       const v = d.values[k];
       return Array.isArray(v) ? v.map(x => x.label) : (v ? [v] : []);
     })].join(' ').toLowerCase();
@@ -699,8 +749,26 @@
     return false;
   }
 
+  // Generischer Filter (ist_filterbar) — spiegelt isDimmedByNav, aber über
+  // filterSingleDims/activeFilterSingle bzw. filterMultiDims/activeFilterMulti.
+  function isDimmedByFilter(d) {
+    for (const dim of filterSingleDims) {
+      const active = activeFilterSingle[dim.key];
+      if (active !== 'alle') {
+        const stepVal = (d.values[dim.key] || [])[0]?.key;
+        if (stepVal !== active) return true;
+      }
+    }
+    for (const dim of filterMultiDims) {
+      const active = activeFilterMulti[dim.key];
+      const stepVals = (d.values[dim.key] || []).map(v => v.key);
+      if (!stepVals.some(v => active.has(v))) return true;
+    }
+    return false;
+  }
+
   function isDimmed(d) {
-    return isDimmedByNav(d) || isDimmedByGroup(d);
+    return isDimmedByNav(d) || isDimmedByGroup(d) || isDimmedByFilter(d);
   }
 
   // ── Karte als HTML ───────────────────────────────────────────────
