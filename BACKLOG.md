@@ -17,6 +17,13 @@ gleichzeitig erfolgreich.
 - open-starcore_D01 bestätigt: bleibt vorerst Heimnetz-only, kein Umsetzungsbedarf heute
 - Dritte Instanz „Kommunikationswege" auf `inabox.lan` aufgesetzt und mit Erstdaten aus Excel
   befüllt (17 Use-Cases), siehe Abschnitt „Instanzen auf inabox.lan" unten
+- open-starcore_D02 erledigt (`@`-Import-Muster in CLAUDE.md)
+- Initiator-Dimension bei Kommunikationswege ergänzt
+- PR #3 (dynamische Viewer-Filter pro Dimension, `ist_filterbar` + generischer Such-Fix)
+  geplant, umgesetzt, lokal verifiziert, gemergt und auf `euviaio-ausfallszenarien` +
+  `kommunikationswege` ausgerollt (Migration `20260904090000` eingespielt, Code aktualisiert,
+  Branding-Diffs sauber neu angewendet). `~/app` dabei bewusst ausgelassen, siehe
+  open-starcore_D03
 
 ---
 
@@ -26,6 +33,7 @@ gleichzeitig erfolgreich.
 |----|---------|-----------|--------|
 | open-starcore_D01 | Kein HTTPS/Reverse-Proxy vor den `inabox.lan`-Instanzen — für reinen Heimnetz-Zugriff aktuell akzeptabel, vor Fernzugriff/AG-Freigabe zu klären | Mittel | 📋 Offen (2026-09-04 bestätigt: bleibt vorerst Heimnetz-only, kein konkreter Anlass für Fernzugriff) |
 | open-starcore_D02 | CLAUDE.md nutzt noch nicht das aktuelle `@`-Import-Muster für `dev-notes/STANDARDS.md` (Muster geerbt von `INA-ePA-und-Patientenportale`, vordatiert die Konvention) — bei Gelegenheit auf aktuelles Template angleichen | Niedrig | ✅ Erledigt (2026-09-04) — Abschnitt „Automatisch geladene Dateien (via `@`-Import)" ergänzt (`BACKLOG.md`/`CHANGELOG.md`/`README.md`/`dev-notes/projects/open-starcore.md`/`dev-notes/STANDARDS.md`), analog zu `handbuch-wiki`/`ird-projektplan`; redundante Prosa in „Hub-Zugehörigkeit" entfernt |
+| open-starcore_D03 | `~/app` (AK-Patientenportale-Checkout auf `inabox`) wurde bei der Ausgliederung nie auf `open-starcore` umgestellt — Remote zeigt noch auf `INA-ePA-und-Patientenportale`, eingefroren bei Commit `c6078a5` (vor PR #57), keine `APP_TITLE`-Konstante. Bekommt dadurch keine post-Split-Verbesserungen (z.B. PR #3, dynamische Viewer-Filter) ab — eigene Migration nötig (Remote umstellen, Datenstand/Migrationshistorie abgleichen), kein einfacher `git pull` | Mittel | 📋 Offen (2026-09-04 entdeckt beim Rollout-Versuch von PR #3) |
 
 ---
 
