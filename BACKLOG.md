@@ -24,6 +24,13 @@ gleichzeitig erfolgreich.
   `kommunikationswege` ausgerollt (Migration `20260904090000` eingespielt, Code aktualisiert,
   Branding-Diffs sauber neu angewendet). `~/app` dabei bewusst ausgelassen, siehe
   open-starcore_D03
+- PR #4 (Nachbesserung aus Nutzer-Praxistest von PR #3): Matrix-Ansicht berücksichtigte
+  Toolbar-Filter/Phase-Tab bisher gar nicht (nur Freitextsuche) — behoben, gefilterte Einträge
+  werden jetzt auch dort gedimmt statt ignoriert. Zusätzlich Editor-Bug behoben: Navigationsachse
+  auf einer `text`-Dimension ließ diese komplett aus dem Viewer verschwinden (kein Filter, kein
+  Detail-Feld) — gleiche Typ-Sperre wie bei Filterbar ergänzt. Gemergt und auf
+  `euviaio-ausfallszenarien` + `kommunikationswege` ausgerollt (reiner Code, keine Migration
+  nötig)
 
 ---
 
@@ -33,7 +40,8 @@ gleichzeitig erfolgreich.
 |----|---------|-----------|--------|
 | open-starcore_D01 | Kein HTTPS/Reverse-Proxy vor den `inabox.lan`-Instanzen — für reinen Heimnetz-Zugriff aktuell akzeptabel, vor Fernzugriff/AG-Freigabe zu klären | Mittel | 📋 Offen (2026-09-04 bestätigt: bleibt vorerst Heimnetz-only, kein konkreter Anlass für Fernzugriff) |
 | open-starcore_D02 | CLAUDE.md nutzt noch nicht das aktuelle `@`-Import-Muster für `dev-notes/STANDARDS.md` (Muster geerbt von `INA-ePA-und-Patientenportale`, vordatiert die Konvention) — bei Gelegenheit auf aktuelles Template angleichen | Niedrig | ✅ Erledigt (2026-09-04) — Abschnitt „Automatisch geladene Dateien (via `@`-Import)" ergänzt (`BACKLOG.md`/`CHANGELOG.md`/`README.md`/`dev-notes/projects/open-starcore.md`/`dev-notes/STANDARDS.md`), analog zu `handbuch-wiki`/`ird-projektplan`; redundante Prosa in „Hub-Zugehörigkeit" entfernt |
-| open-starcore_D03 | `~/app` (AK-Patientenportale-Checkout auf `inabox`) wurde bei der Ausgliederung nie auf `open-starcore` umgestellt — Remote zeigt noch auf `INA-ePA-und-Patientenportale`, eingefroren bei Commit `c6078a5` (vor PR #57), keine `APP_TITLE`-Konstante. Bekommt dadurch keine post-Split-Verbesserungen (z.B. PR #3, dynamische Viewer-Filter) ab — eigene Migration nötig (Remote umstellen, Datenstand/Migrationshistorie abgleichen), kein einfacher `git pull` | Mittel | 📋 Offen (2026-09-04 entdeckt beim Rollout-Versuch von PR #3) |
+| open-starcore_D03 | `~/app` (AK-Patientenportale-Checkout auf `inabox`) wurde bei der Ausgliederung nie auf `open-starcore` umgestellt — Remote zeigt noch auf `INA-ePA-und-Patientenportale`, eingefroren bei Commit `c6078a5` (vor PR #57), keine `APP_TITLE`-Konstante. Bekommt dadurch keine post-Split-Verbesserungen (z.B. PR #3/#4, dynamische Viewer-Filter) ab — eigene Migration nötig (Remote umstellen, Datenstand/Migrationshistorie abgleichen), kein einfacher `git pull` | Mittel | 📋 Offen (2026-09-04 entdeckt beim Rollout-Versuch von PR #3) |
+| open-starcore_D04 | Anwenderdoku für Editor-Konzepte fehlt (Unterschied Navigationsachse/Filterbar/Gruppen-Filter, wann welches Feld sinnvoll ist) — bisher nur in Commit-Messages/BACKLOG erklärt, nicht für die Arbeitsgruppe selbst aufbereitet | Niedrig | 📋 Offen (2026-09-04, beim Nutzer-Feedback zu PR #3/#4 aufgefallen) |
 
 ---
 
