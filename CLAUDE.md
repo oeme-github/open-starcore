@@ -1,4 +1,4 @@
-# CLAUDE.md – Arbeitsanweisungen für Claude Code
+# CLAUDE.md – open-starcore
 
 ## Hub-Zugehörigkeit
 
@@ -34,6 +34,15 @@ UI-Text spricht generisch von „Einträgen".
 
 ---
 
+## Entwicklungsumgebung
+
+Gemeinsame Devbox-Umgebung (OS/Hardware/Migrationsgeschichte): siehe `dev-notes/REPOS.md`
+(„Speicherorte") — autoritative Quelle, hier bewusst nicht dupliziert (siehe
+`dev-notes/STANDARDS.md` §3, „Single Source of Truth für Infra-Fakten").
+
+- **Projektpfad (Devbox):** `~/git_repos/open-starcore`
+- **Versionskontrolle:** Git, Remote auf GitHub (`github.com/oeme-github/open-starcore`)
+
 ## Dateien
 
 - `supabase/` — Postgres + PostgREST + GoTrue (Docker Compose),
@@ -45,10 +54,6 @@ UI-Text spricht generisch von „Einträgen".
   SSO-Scaffolding für Microsoft Entra ID), von beiden Frontends per
   `<script src="../shared/auth.js">` eingebunden
 
-**Alles starten:** `./supabase/start.sh` (idempotent). **Stoppen:**
-`./supabase/stop.sh` (Daten bleiben erhalten; `--wipe-data` für kompletten
-Reset).
-
 **Wichtig für lokale Tests:** Viewer/Editor müssen aus dem
 Projekt-Wurzelverzeichnis heraus per Webserver bereitgestellt werden (nicht
 aus ihrem eigenen Unterordner), da beide `../shared/auth.js` referenzieren.
@@ -57,6 +62,18 @@ aus ihrem eigenen Unterordner), da beide `../shared/auth.js` referenzieren.
 `viewer-db/index.html`/`editor-db/index.html` (analog zu
 `GOTRUE_URL`/`REST_URL`) — jede Instanz setzt hier ihren eigenen
 Produktnamen.
+
+## Häufige Befehle
+```bash
+# Alles starten (idempotent)
+./supabase/start.sh
+
+# Stoppen (Daten bleiben erhalten)
+./supabase/stop.sh
+
+# Stoppen mit komplettem Reset
+./supabase/stop.sh --wipe-data
+```
 
 ---
 
@@ -92,3 +109,16 @@ Produktnamen.
 - @~/git_repos/dev-notes/STANDARDS.md — verbindlicher, projektübergreifender Arbeitsablauf
   (Hub-Regelwerk; externer Import außerhalb dieses Projekts — Claude Code zeigt beim allerersten
   Laden einen einmaligen Genehmigungsdialog, danach automatisch)
+
+---
+
+## Doku-Check (alle 4 Wochen)
+Dedizierte Session zur Synchronisierung der Dokumentation mit dem tatsächlichen Projektstand:
+- `CLAUDE.md` — nur noch projektspezifische Fakten hier; deckt sich der Rest noch mit
+  `dev-notes/STANDARDS.md`?
+- `README.md`/`supabase/README.md` — Features, Konfiguration, Installationsschritte
+- `BACKLOG.md` — erledigte Einträge bereinigen, neue Erkenntnisse ergänzen; IDs auf
+  `<repo>_<ID>`-Konvention prüfen und ggf. nachziehen (siehe `dev-notes/STANDARDS.md`) — inkl.
+  Querverweise in `dev-notes/PROJECTS.md`/`dev-notes/projects/open-starcore.md`
+
+Nächster Doku-Check: **2026-10-03**
