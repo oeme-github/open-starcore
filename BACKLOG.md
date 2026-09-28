@@ -34,6 +34,14 @@ untereinander, nicht mit anderen Projekten auf anderen Hosts — deshalb hier st
 | euviaio-Ausfallszenarien | `euviaio-ausfallszenarien` | `euviaio-starcore` | `euviaio-starcore-static.service` | „Euviaio Ausfallszenarien" | 5436 | 8002 | 9998 | 8027 | 8096 |
 | Kommunikationswege (Arbeitstitel) | `kommunikationswege` | `kommunikationswege` | `kommunikationswege-static.service` (seit 2026-09-28) | „Kommunikationswege" | 5437 | 8003 | 9997 | 8028 | 8097 |
 
+**Adressen** (alle Klartext-HTTP, nur im Heimnetz):
+
+| Instanz | Viewer | Editor | Mailpit |
+|---|---|---|---|
+| AK-Patientenportale | http://inabox.lan:8095/viewer-db/ | http://inabox.lan:8095/editor-db/ | http://inabox.lan:8026/ |
+| euviaio-Ausfallszenarien | http://inabox.lan:8096/viewer-db/ | http://inabox.lan:8096/editor-db/ | http://inabox.lan:8027/ |
+| Kommunikationswege | http://inabox.lan:8097/viewer-db/ | http://inabox.lan:8097/editor-db/ | http://inabox.lan:8028/ |
+
 Backend-Container starten nach Reboot über Dockers Restart-Policy (`unless-stopped`), keine
 eigene systemd-Unit; Frontends über die jeweilige Static-Unit (`python3 -m http.server`,
 `WorkingDirectory` = Checkout). `APP_TITLE` ist in jedem Checkout eine lokale, uncommittete
