@@ -7,6 +7,23 @@ einzelnen Änderungen stehen zusätzlich in den (bewusst ausführlichen) Commit-
 
 ---
 
+## [2026-09-28] — Mouse-Over-Erläuterung (D07), Editor-Hilfeseite (D04)
+
+### Added
+- open-starcore_D07 (PR #5): optionale Erläuterung (`erlaeuterung`) an Dimensionen und
+  Dimension-Werten, Migration `20260928090000_add_erlaeuterung.sql`. Der Editor pflegt sie im
+  Dimensionsformular und pro Wertzeile. Der Viewer zeigt sie als Mouse-Over an Beschriftungen,
+  Tabs, Chips, Badges und in der Matrix; Beschriftungen mit Erläuterung sind gepunktet
+  unterstrichen. Kurz-Key-Badges fallen ohne Erläuterung auf das volle Label zurück.
+  Nutzerwunsch: „Mouse-Over-Text für bestimmte Dimensionen".
+- open-starcore_D04 (PR #7, ersetzt das versehentlich in den D07-Branch gemergte #6):
+  Anwender-Anleitung `editor-db/hilfe.html` (eine Seite, druckbar), im Editor über „Hilfe"
+  verlinkt — Rollen, Einträge, Mitglieder, Wirkung der Dimensionsfelder im Viewer, FAQ.
+- Rollout auf alle drei `inabox`-Instanzen: Migration zuerst per `psql`, danach Code per
+  `git stash`/`pull`/`stash pop`; Titel, Ports, Hilfeseite und neue Spalte je Instanz geprüft.
+
+---
+
 ## [2026-09-28] — Backlog-Aufräumen, Patientenpfad-Instanz umgestellt (D03)
 
 ### Fixed
