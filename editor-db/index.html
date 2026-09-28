@@ -742,7 +742,7 @@
   async function persistDimensionValueOrder(dim) {
     const payload = dim.values.map((v, i) => ({
       id: v.id, dimension_id: dim.id, key: v.key, label: v.label,
-      farbe: v.farbe ?? null, gruppe: v.gruppe ?? null, reihenfolge: i + 1,
+      farbe: v.farbe ?? null, gruppe: v.gruppe ?? null, erlaeuterung: v.erlaeuterung ?? null, reihenfolge: i + 1,
     }));
     const res = await apiFetch('/dimension_values?on_conflict=id', {
       method: 'POST',
@@ -799,7 +799,7 @@
     const payload = dims.map((d, i) => ({
       id: d.id, workgroup_id: workgroup.id, key: d.key, label: d.label, typ: d.typ,
       ist_navigationsachse: d.ist_navigationsachse, ist_filterbar: d.ist_filterbar,
-      farbe: d.farbe ?? null, reihenfolge: i + 1,
+      farbe: d.farbe ?? null, erlaeuterung: d.erlaeuterung ?? null, reihenfolge: i + 1,
     }));
     const res = await apiFetch('/dimensions?on_conflict=id', {
       method: 'POST',
