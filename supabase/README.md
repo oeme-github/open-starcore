@@ -193,6 +193,24 @@ Badges, die nur den Kurz-Key eines Werts zeigen (z.B. „E"), fallen ohne
 Erläuterung auf das volle Label als Mouse-Over zurück. Einschränkung:
 `title`-Tooltips erscheinen auf Touch-Geräten nicht.
 
+## Einstellungen im Editor (Einleitungstext)
+
+Im Editor unter „Einstellungen" (Rolle `admin`) lässt sich ein optionaler
+Einleitungstext für den Viewer-Header pflegen: ein immer sichtbarer
+Einzeiler (auch im Druck) und ein aufklappbarer Kasten mit eigener
+Überschrift (Default „Mehr erfahren") und Text (Leerzeile = Absatz,
+`**fett**`, kein HTML — der Viewer escaped alles). Leere Felder = nichts
+anzeigen. Gespeichert in `workgroups.einleitung_kurz/_titel/_text`
+(Migration `20260928100000_add_workgroup_einleitung.sql`). Da `workgroups`
+bewusst keine Schreib-Policy hat, schreibt der Editor ausschließlich über
+die `security definer`-RPC `set_workgroup_einleitung(p_workgroup_id,
+p_kurz, p_titel, p_text)`, die die `admin`-Rolle selbst prüft und nur diese
+drei Spalten ändert (`key`/`name` bleiben Betreiber-Sache).
+
+**Reihenfolge beim Rollout:** erst Migration, dann Code — Viewer und Editor
+fragen die neuen Spalten beim Laden ab; ohne Migration schlägt im Editor
+schon der Start fehl.
+
 ## Mitglieder-Verwaltung im Editor
 
 Im Editor zwischen „Einträge"/„Dimensionen"/„Mitglieder" umschalten.
