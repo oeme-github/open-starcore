@@ -102,7 +102,6 @@ Produktnamen.
 ## Automatisch geladene Dateien (via `@`-Import)
 
 - @BACKLOG.md — **zuerst lesen**: letzter Stand, offene Punkte
-- @CHANGELOG.md — expliziter Verzicht-Vermerk (dieses Projekt pflegt keins aktiv, siehe Datei)
 - @README.md — Projektübersicht, Datenmodell-Kurzfassung
 - @~/git_repos/dev-notes/projects/open-starcore.md — Hub-Projektkontext (letzter Stand,
   nächster Schritt, offene Fragen)
