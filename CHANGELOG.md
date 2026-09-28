@@ -9,6 +9,13 @@ einzelnen Änderungen stehen zusätzlich in den (bewusst ausführlichen) Commit-
 
 ## [2026-09-28] — Backlog-Aufräumen, Patientenpfad-Instanz umgestellt (D03)
 
+### Fixed
+- Kommunikationswege-Frontend (Port 8097) war seit dem `inabox`-Reboot am 2026-09-27 nicht
+  erreichbar: es lief nur per `nohup` aus `start.sh`, ohne systemd-Unit — das Backend kam über
+  Dockers Restart-Policy zurück, das Frontend nicht. Neue Unit `kommunikationswege-static.service`
+  (analog `prozesslandkarte-static.service`, `WorkingDirectory=/home/deploy/kommunikationswege`),
+  aktiviert und verifiziert.
+
 ### Changed
 - open-starcore_D03: AK-Patientenportale-Instanz („Patientenpfad") auf `inabox` vollständig auf
   `open-starcore` umgestellt. Ist-Stand war eine seit 2026-08-15 halb umgezogene Instanz:

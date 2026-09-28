@@ -30,7 +30,7 @@ untereinander, nicht mit anderen Projekten auf anderen Hosts — deshalb hier st
 |---|---|---|---|---|---|---|---|---|---|
 | AK-Patientenportale | `open-starcore` | `supabase` | `prozesslandkarte-static.service` | „Patientenpfad" | 5435 | 8001 | 9999 | 8026 | 8095 |
 | euviaio-Ausfallszenarien | `euviaio-ausfallszenarien` | `euviaio-starcore` | `euviaio-starcore-static.service` | „Euviaio Ausfallszenarien" | 5436 | 8002 | 9998 | 8027 | 8096 |
-| Kommunikationswege (Arbeitstitel) | `kommunikationswege` | `kommunikationswege` | *(fehlt — 8097 lauscht nicht, 2026-09-28 gefunden, wird geprüft)* | „Kommunikationswege" | 5437 | 8003 | 9997 | 8028 | 8097 |
+| Kommunikationswege (Arbeitstitel) | `kommunikationswege` | `kommunikationswege` | `kommunikationswege-static.service` (seit 2026-09-28) | „Kommunikationswege" | 5437 | 8003 | 9997 | 8028 | 8097 |
 
 Backend-Container starten nach Reboot über Dockers Restart-Policy (`unless-stopped`), keine
 eigene systemd-Unit; Frontends über die jeweilige Static-Unit (`python3 -m http.server`,
