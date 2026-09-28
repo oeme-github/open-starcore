@@ -19,6 +19,9 @@ einzelnen Änderungen stehen zusätzlich in den (bewusst ausführlichen) Commit-
   `20260928100000_add_workgroup_einleitung.sql` (`workgroups.einleitung_kurz/_titel/_text`);
   Pflege im Editor unter „Einstellungen" (admin) ausschließlich über die security-definer-RPC
   `set_workgroup_einleitung` — `workgroups` behält bewusst keine Schreib-Policy.
+- Editor (PR #10): Kurzanleitung zum Einleitungstext als eigene Kachel unter dem
+  Einstellungen-Formular (Felder, erlaubte Formatierung, HTML-Tags erscheinen als Text,
+  Beispiel). Ausgerollt auf alle drei Instanzen (`78bc33b`).
 - Rollout auf alle drei `inabox`-Instanzen (`10d1dfd`): Migration zuerst, dann Code; je Instanz
   Titel, Ports, neue Spalten, REST und RPC-Ablehnung ohne Login geprüft.
 
