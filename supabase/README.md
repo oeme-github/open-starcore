@@ -149,6 +149,12 @@ python3 -m http.server 8095
 # im Browser: http://localhost:8095/editor-db/
 ```
 
+**Anwender-Anleitung:** `../editor-db/hilfe.html` — eine druckbare Seite für
+die Arbeitsgruppe (Rollen, Einträge, Dimensionen-Felder und ihre Wirkung im
+Viewer, Mitglieder, häufige Fragen), im Editor oben rechts über „Hilfe"
+erreichbar. Statisch, ohne Login. Bei Änderungen am Editor-/Viewer-Verhalten
+mitpflegen.
+
 ## Dimensionen-Verwaltung im Editor
 
 Im Editor (`editor-db/index.html`) zwischen „Einträge" und „Dimensionen"

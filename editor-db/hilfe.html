@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editor – Anleitung</title>
+  <!-- D04: Anwenderdoku für die Arbeitsgruppe, bewusst eine einzige statische
+       Seite ohne Login/DB-Zugriff (reines Nachschlagen). Wird mit jeder Instanz
+       automatisch ausgeliefert und ist im Editor über "Hilfe" verlinkt. Beim
+       Ändern von Editor-/Viewer-Verhalten hier mitziehen, sonst driftet die
+       Anleitung vom Code weg. Farb-Tokens wie editor-db/index.html. -->
+  <style>
+    :root {
+      --c-text-1: #111827; --c-text-2: #374151; --c-text-3: #6B7280; --c-text-4: #9CA3AF;
+      --c-bg: #F3F4F6; --c-surface: #ffffff; --c-border-1: #E5E7EB; --c-border-2: #D1D5DB;
+      --r-sm: 6px; --r-lg: 12px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--c-bg); color: var(--c-text-1); font-size: 13px; line-height: 1.5;
+    }
+    .page { max-width: 980px; margin: 0 auto; padding: 20px 16px 40px; }
+    header { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
+    h1 { font-size: 18px; letter-spacing: -0.01em; }
+    header p { color: var(--c-text-3); font-size: 12px; }
+    .actions { display: flex; gap: 8px; }
+    .actions button {
+      padding: 5px 11px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm);
+      background: var(--c-surface); color: var(--c-text-2); font-size: 12px; font-weight: 600; cursor: pointer;
+    }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .full { grid-column: 1 / -1; }
+    section {
+      background: var(--c-surface); border: 1px solid var(--c-border-1); border-radius: var(--r-lg); padding: 14px 16px;
+    }
+    h2 {
+      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--c-text-3); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+    }
+    .role {
+      display: inline-block; padding: 0 6px; border-radius: 4px; font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.04em; border: 1px solid;
+    }
+    .role.viewer { background: #F3F4F6; color: var(--c-text-3); border-color: var(--c-border-2); }
+    .role.editor { background: #DBEAFE; color: #1E40AF; border-color: #93C5FD; }
+    .role.admin  { background: #FEF3C7; color: #78350F; border-color: #FCD34D; }
+    ul { padding-left: 16px; }
+    li { margin-bottom: 3px; }
+    li::marker { color: var(--c-text-4); }
+    b { font-weight: 600; }
+    .hint { color: var(--c-text-3); font-size: 12px; margin-top: 6px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { text-align: left; vertical-align: top; padding: 5px 8px; border-bottom: 1px solid var(--c-border-1); }
+    th { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--c-text-4); }
+    td:first-child { font-weight: 600; white-space: nowrap; }
+    tr:last-child td { border-bottom: none; }
+    .table-wrap { overflow-x: auto; }
+    dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; }
+    dt { font-weight: 600; }
+    dd { color: var(--c-text-2); }
+
+    @media (max-width: 720px) {
+      .grid { grid-template-columns: 1fr; }
+      dl { grid-template-columns: 1fr; }
+      dd { margin-bottom: 6px; }
+    }
+    @media print {
+      @page { size: A4; margin: 10mm; }
+      body { background: #fff; font-size: 10.5px; line-height: 1.4; }
+      .page { max-width: none; padding: 0; }
+      .actions { display: none; }
+      section { border-color: #ccc; padding: 8px 10px; break-inside: avoid; }
+      .grid { gap: 8px; }
+      table { font-size: 10px; }
+      th, td { padding: 3px 6px; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div>
+      <h1>Editor – Anleitung</h1>
+      <p>Kurzübersicht zum Nachschlagen: Einträge pflegen, Dimensionen einrichten, Mitglieder verwalten.</p>
+    </div>
+    <div class="actions">
+      <button type="button" onclick="window.print()">Drucken</button>
+    </div>
+  </header>
+
+  <div class="grid">
+
+    <section>
+      <h2>Grundbegriffe</h2>
+      <dl>
+        <dt>Eintrag</dt>
+        <dd>Ein Datensatz des Katalogs mit Nummer, Titel und Angaben zu jeder Dimension.</dd>
+        <dt>Dimension</dt>
+        <dd>Eine Eigenschaft, nach der Einträge beschrieben werden, z.&nbsp;B. „Phase" oder „Kategorie". Die Arbeitsgruppe legt sie selbst fest.</dd>
+        <dt>Wert</dt>
+        <dd>Eine Auswahlmöglichkeit innerhalb einer Dimension, z.&nbsp;B. „vor dem Aufenthalt".</dd>
+      </dl>
+    </section>
+
+    <section>
+      <h2>Anmelden und Rollen</h2>
+      <ul>
+        <li>E-Mail eingeben, <b>6-stelligen Code</b> aus der Mail eintragen. Alternativ „mit Passwort anmelden".</li>
+        <li><span class="role viewer">viewer</span> nur lesen (Viewer).</li>
+        <li><span class="role editor">editor</span> Einträge bearbeiten und neue Werte ergänzen.</li>
+        <li><span class="role admin">admin</span> zusätzlich Dimensionen und Mitglieder verwalten.</li>
+      </ul>
+      <p class="hint">Die eigene Rolle steht oben rechts neben der E-Mail-Adresse.</p>
+    </section>
+
+    <section>
+      <h2>Einträge <span class="role editor">editor</span></h2>
+      <ul>
+        <li><b>„+ Neu"</b> legt einen Eintrag an. Eine Zeile anklicken öffnet ihn, erneutes Klicken klappt ihn zu.</li>
+        <li><b>Nr.</b> muss eindeutig sein. <b>Reihenfolge</b> per Ziehen am Griff ⠿ ändern, die Nummern passen sich dann automatisch an.</li>
+        <li>Pro Dimension gibt es ein Feld: Auswahlliste (ein Wert), Ankreuzliste (mehrere Werte) oder Freitext. Lange Ankreuzlisten haben ein Suchfeld.</li>
+        <li><b>Neuer Wert</b> fehlt? Direkt unter dem Feld eintragen und „+ Hinzufügen". Bei Navigationsachsen geht das nur unter „Dimensionen".</li>
+        <li><b>Speichern</b> nicht vergessen, erst dann ist alles übernommen. Unter <b>Verlauf</b> steht, wer wann was geändert hat.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Mitglieder <span class="role admin">admin</span></h2>
+      <ul>
+        <li><b>„+ Neu"</b>: E-Mail-Adresse und Rolle eintragen, speichern.</li>
+        <li>Hat die Person schon ein Konto, ist sie sofort Mitglied. Sonst erscheint sie als <b>„eingeladen"</b>.</li>
+        <li><b>Es wird keine Einladungsmail verschickt.</b> Die Person selbst informieren. Sie meldet sich dann einfach mit ihrer E-Mail-Adresse an und ist danach automatisch Mitglied.</li>
+        <li>Rolle ändern: Zeile öffnen, Rolle wählen, speichern. Die E-Mail-Adresse ist danach nicht mehr änderbar.</li>
+        <li>Die letzte <span class="role admin">admin</span>-Rolle lässt sich nicht entfernen.</li>
+      </ul>
+    </section>
+
+    <section class="full">
+      <h2>Dimensionen einrichten <span class="role admin">admin</span></h2>
+      <p style="margin-bottom:8px;">Jedes Feld einer Dimension steuert, <b>wo und wie</b> sie im Viewer erscheint.
+        Neue Dimensionen erst speichern, dann lassen sich Werte anlegen.
+        Die Reihenfolge der Dimensionen per Ziehen am Griff ⠿ in der Liste ändern.</p>
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>Feld</th><th>Wirkung im Viewer</th><th>Wann sinnvoll</th></tr></thead>
+        <tbody>
+          <tr><td>Key</td><td>Technischer Name, im Viewer unsichtbar. Nach dem Anlegen nicht mehr änderbar.</td><td>Kurz, klein, ohne Leerzeichen, z.&nbsp;B. <code>kategorie</code>.</td></tr>
+          <tr><td>Label</td><td>Angezeigter Name der Dimension.</td><td>Immer.</td></tr>
+          <tr><td>Erläuterung</td><td>Erscheint als Mouse-Over-Text an der Beschriftung, die dann gepunktet unterstrichen ist.</td><td>Wenn der Name allein nicht selbsterklärend ist.</td></tr>
+          <tr><td>Typ</td><td><b>single_select</b>: genau ein Wert je Eintrag. <b>multi_select</b>: mehrere Werte. <b>text</b>: Freitext, nur in der Detailansicht und über die Suche findbar.</td><td>Nach dem Anlegen möglichst nicht mehr wechseln.</td></tr>
+          <tr><td>Reihenfolge</td><td>Legt die Anordnung fest. single_select-Dimensionen stehen immer als farbiger Chip oben auf der Karte. Bei <b>multi_select</b> entscheidet die Reihenfolge, was auf der Karte sichtbar ist: die ersten beiden als Chips, die dritte als kleines Badge, alle weiteren erst beim Aufklappen.</td><td>Wichtigste Dimensionen nach vorn.</td></tr>
+          <tr><td>Navigationsachse</td><td>Eigene Tab-Leiste bzw. Umschalt-Chips oben im Viewer. Die <b>erste</b> single_select-Achse teilt die Seite zusätzlich in Abschnitte mit farbiger Kopfzeile. Weitere Achsen erscheinen zusätzlich als Badge auf jeder Karte.</td><td>Für die 1–2 zentralen Gliederungen, z.&nbsp;B. „Phase". Nicht für text.</td></tr>
+          <tr><td>Filterbar</td><td>Eigene Filterzeile oben, <b>ohne</b> die Seite zu gliedern und ohne zusätzliches Karten-Badge.</td><td>Für zusätzliche Filter, die die Karten nicht verändern sollen. Nicht für text.</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p style="margin:12px 0 6px;"><b>Werte einer Dimension</b> (je Zeile, einzeln mit „Speichern" übernehmen, Reihenfolge per Ziehen):</p>
+      <div class="table-wrap">
+      <table>
+        <tbody>
+          <tr><td>Label</td><td>Angezeigter Name des Werts.</td></tr>
+          <tr><td>Gruppe</td><td>Optional. Sobald ein Wert einer multi_select-Dimension eine Gruppe hat, bekommt der Viewer eine zusätzliche Filterzeile „… (Gruppe)", z.&nbsp;B. Gesetze nach Gesetzeskategorie. Werte ohne Gruppe landen dort unter „Sonstige".</td></tr>
+          <tr><td>Erläuterung</td><td>Optional. Mouse-Over-Text am Wert, z.&nbsp;B. „E = Datenobjekt wird neu angelegt".</td></tr>
+          <tr><td>Farbe</td><td>Farbe des Werts in Tabs, Chips und Abschnitten. Ohne eigene Farbe wird automatisch eine gewählt.</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </section>
+
+    <section class="full">
+      <h2>Häufige Fragen</h2>
+      <dl>
+        <dt>Dimension taucht im Viewer nirgends auf?</dt>
+        <dd>Text-Dimensionen erscheinen in der aufgeklappten Karte nur, wenn Text eingetragen ist. multi_select-Dimensionen stehen nur dann auf der zugeklappten Karte, wenn sie in der Reihenfolge unter den ersten drei sind, sonst erst beim Aufklappen.</dd>
+        <dt>„+ Hinzufügen" bei Werten fehlt?</dt>
+        <dd>Die Dimension ist noch nicht gespeichert. Erst speichern, dann Werte anlegen.</dd>
+        <dt>Knöpfe unter „Dimensionen" oder „Mitglieder" ausgegraut?</dt>
+        <dd>Dafür ist die Rolle <span class="role admin">admin</span> nötig.</dd>
+        <dt>Wert oder Dimension löschen?</dt>
+        <dd>Vorsicht: Ein gelöschter Wert verschwindet aus allen Einträgen, eine gelöschte Dimension samt allen Werten und Zuordnungen. Im Zweifel lieber umbenennen.</dd>
+        <dt>Eingeladene Person sieht nichts?</dt>
+        <dd>Sie muss sich mit genau der eingeladenen E-Mail-Adresse anmelden. Danach ggf. die Seite neu laden.</dd>
+      </dl>
+    </section>
+
+  </div>
+</div>
+</body>
+</html>
