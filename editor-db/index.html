@@ -199,6 +199,7 @@
     }
     .value-row input[type="text"].value-label { flex: 1; }
     .value-row input[type="text"].value-gruppe { width: 120px; }
+    .value-row input[type="text"].value-erlaeuterung { width: 180px; }
     .value-row input[type="color"] { width: 32px; height: 28px; padding: 2px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm); }
     .value-row input[type="number"] { width: 52px; padding: 4px 6px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm); font-size: 12px; }
     .value-row button {
@@ -363,6 +364,11 @@
             <label for="dim-field-label">Label</label>
             <input type="text" id="dim-field-label" required>
           </div>
+        </div>
+        <div class="field">
+          <label for="dim-field-erlaeuterung">Erläuterung (optional)</label>
+          <textarea id="dim-field-erlaeuterung" rows="2"></textarea>
+          <p class="field-hint">Erscheint im Viewer als Mouse-Over an der Beschriftung dieser Dimension. Leer lassen = kein Mouse-Over.</p>
         </div>
         <div class="form-row">
           <div class="field">
@@ -736,7 +742,7 @@
   async function persistDimensionValueOrder(dim) {
     const payload = dim.values.map((v, i) => ({
       id: v.id, dimension_id: dim.id, key: v.key, label: v.label,
-      farbe: v.farbe ?? null, gruppe: v.gruppe ?? null, reihenfolge: i + 1,
+      farbe: v.farbe ?? null, gruppe: v.gruppe ?? null, erlaeuterung: v.erlaeuterung ?? null, reihenfolge: i + 1,
     }));
     const res = await apiFetch('/dimension_values?on_conflict=id', {
       method: 'POST',
@@ -793,7 +799,7 @@
     const payload = dims.map((d, i) => ({
       id: d.id, workgroup_id: workgroup.id, key: d.key, label: d.label, typ: d.typ,
       ist_navigationsachse: d.ist_navigationsachse, ist_filterbar: d.ist_filterbar,
-      farbe: d.farbe ?? null, reihenfolge: i + 1,
+      farbe: d.farbe ?? null, erlaeuterung: d.erlaeuterung ?? null, reihenfolge: i + 1,
     }));
     const res = await apiFetch('/dimensions?on_conflict=id', {
       method: 'POST',
@@ -806,6 +812,13 @@
     await reloadDimensions(); // synct lokalen Stand mit dem Server (auch im Fehlerfall)
   }
 
+  // D07: optionale Erläuterung als Mouse-Over — gleiche Logik wie im Viewer, damit
+  // Redakteure beim Befüllen dieselbe Erklärung sehen wie Leser.
+  function tip(obj) {
+    const text = obj?.erlaeuterung?.trim();
+    return text ? ` title="${escapeHtml(text)}"` : '';
+  }
+
   // ── Formular: Felder dynamisch aus dims generieren ──────────────────
   function fieldHtml(dim, stepValues) {
     const values = (stepValues && stepValues[dim.key]) || (dim.typ === 'text' ? '' : []);
@@ -813,7 +826,7 @@
     if (dim.typ === 'text') {
       return `
         <div class="field" data-dim="${dim.key}" data-typ="text">
-          <label>${escapeHtml(dim.label)}</label>
+          <label${tip(dim)}>${escapeHtml(dim.label)}</label>
           <textarea rows="4">${escapeHtml(values)}</textarea>
         </div>`;
     }
@@ -821,11 +834,11 @@
     if (dim.typ === 'single_select') {
       const selectedKey = values[0]?.key || '';
       const options = ['<option value="">–</option>'].concat(
-        dim.values.map(v => `<option value="${escapeHtml(v.key)}" ${v.key === selectedKey ? 'selected' : ''}>${escapeHtml(v.label)}</option>`)
+        dim.values.map(v => `<option value="${escapeHtml(v.key)}"${tip(v)} ${v.key === selectedKey ? 'selected' : ''}>${escapeHtml(v.label)}</option>`)
       ).join('');
       return `
         <div class="field" data-dim="${dim.key}" data-typ="single_select">
-          <label>${escapeHtml(dim.label)}</label>
+          <label${tip(dim)}>${escapeHtml(dim.label)}</label>
           <select>${options}</select>
           ${addValueRow(dim)}
         </div>`;
@@ -834,7 +847,7 @@
     // multi_select
     const selectedKeys = new Set(values.map(v => v.key));
     const checkboxes = dim.values.map(v => `
-      <label class="checkbox-item">
+      <label class="checkbox-item"${tip(v)}>
         <input type="checkbox" value="${escapeHtml(v.key)}" ${selectedKeys.has(v.key) ? 'checked' : ''}>
         ${escapeHtml(v.label)}
       </label>`).join('');
@@ -851,7 +864,7 @@
       : '';
     return `
       <div class="field" data-dim="${dim.key}" data-typ="multi_select">
-        <label>${escapeHtml(dim.label)}</label>
+        <label${tip(dim)}>${escapeHtml(dim.label)}</label>
         ${filterHtml}
         <div class="checkbox-list${scrollClass}">${checkboxes}</div>
         ${addValueRow(dim)}
@@ -1025,6 +1038,8 @@
         <span class="drag-handle" title="Ziehen zum Umsortieren">⠿</span>
         <input type="text" class="value-label" value="${escapeHtml(v.label)}">
         <input type="text" class="value-gruppe" placeholder="Gruppe (optional)" value="${escapeHtml(v.gruppe || '')}" title="Übergruppe für den Gruppen-Filter im Viewer (z.B. Gesetzeskategorie, Standard-Familie)">
+        <input type="text" class="value-erlaeuterung" placeholder="Erläuterung (optional)" value="${escapeHtml(v.erlaeuterung || '')}" title="Mouse-Over-Text für diesen Wert im Viewer (z.B. E = Erzeugt). Leer = kein Mouse-Over.">
+
         <input type="color" value="${v.farbe || '#94a3b8'}">
         <input type="number" value="${v.reihenfolge}" title="Reihenfolge">
         <button type="button" onclick="saveDimensionValueRow('${v.id}')">Speichern</button>
@@ -1061,6 +1076,7 @@
     document.getElementById('dim-field-key').value = dim?.key ?? '';
     document.getElementById('dim-field-key').disabled = !!dim;
     document.getElementById('dim-field-label').value = dim?.label ?? '';
+    document.getElementById('dim-field-erlaeuterung').value = dim?.erlaeuterung ?? '';
     document.getElementById('dim-field-typ').value = dim?.typ ?? 'single_select';
     document.getElementById('dim-field-reihenfolge').value = dim?.reihenfolge ?? draft?.reihenfolge ?? 1;
     document.getElementById('dim-field-farbe').value = dim?.farbe ?? '#94a3b8';
@@ -1091,6 +1107,7 @@
       const payload = {
         key: document.getElementById('dim-field-key').value.trim(),
         label: document.getElementById('dim-field-label').value.trim(),
+        erlaeuterung: document.getElementById('dim-field-erlaeuterung').value.trim() || null,
         typ: document.getElementById('dim-field-typ').value,
         reihenfolge: Number(document.getElementById('dim-field-reihenfolge').value) || 1,
         farbe: document.getElementById('dim-field-farbe').value,
@@ -1103,7 +1120,7 @@
           method: 'PATCH',
           headers: { Prefer: 'return=representation' },
           body: JSON.stringify({
-            label: payload.label, typ: payload.typ, reihenfolge: payload.reihenfolge,
+            label: payload.label, erlaeuterung: payload.erlaeuterung, typ: payload.typ, reihenfolge: payload.reihenfolge,
             farbe: payload.farbe, ist_navigationsachse: payload.ist_navigationsachse,
             ist_filterbar: payload.ist_filterbar,
           }),
@@ -1158,7 +1175,7 @@
 
   async function reloadDimensions() {
     const dimsRes = await apiFetch(
-      `/dimensions?select=id,key,label,typ,ist_navigationsachse,ist_filterbar,reihenfolge,farbe,dimension_values(id,key,label,farbe,gruppe,reihenfolge)` +
+      `/dimensions?select=id,key,label,typ,ist_navigationsachse,ist_filterbar,reihenfolge,farbe,erlaeuterung,dimension_values(id,key,label,farbe,gruppe,reihenfolge,erlaeuterung)` +
       `&workgroup_id=eq.${workgroup.id}&order=reihenfolge&dimension_values.order=reihenfolge`
     );
     dims = (await dimsRes.json()).map(d => ({ ...d, values: d.dimension_values }));
@@ -1190,12 +1207,13 @@
     const row = document.querySelector(`.value-row[data-value-id="${valueId}"]`);
     const label = row.querySelector('.value-label').value.trim();
     const gruppe = row.querySelector('.value-gruppe').value.trim() || null;
+    const erlaeuterung = row.querySelector('.value-erlaeuterung').value.trim() || null;
     const farbe = row.querySelector('input[type="color"]').value;
     const reihenfolge = Number(row.querySelector('input[type="number"]').value) || 1;
     const res = await apiFetch(`/dimension_values?id=eq.${valueId}`, {
       method: 'PATCH',
       headers: { Prefer: 'return=representation' },
-      body: JSON.stringify({ label, gruppe, farbe, reihenfolge }),
+      body: JSON.stringify({ label, gruppe, erlaeuterung, farbe, reihenfolge }),
     });
     if (!res.ok) {
       alert(`Speichern fehlgeschlagen (HTTP ${res.status}). Fehlende editor-/admin-Rolle?`);

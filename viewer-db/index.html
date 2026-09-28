@@ -89,6 +89,13 @@
       font-size: 11px; font-weight: 600; color: var(--c-text-4);
       text-transform: uppercase; letter-spacing: 0.06em; min-width: 90px;
     }
+    /* D07: Beschriftungen mit gepflegter Erläuterung dezent als "hat Mouse-Over"
+       markieren — sonst ist der Tooltip für Nutzer unauffindbar. Chips/Tabs
+       bleiben bewusst unmarkiert (würde die Farbflächen unruhig machen). */
+    .filter-label[title], .detail-section-label[title], .phase-section-title[title], .matrix-table th[title] {
+      cursor: help; text-decoration: underline dotted; text-underline-offset: 3px;
+    }
+    .card-op-badge[title] { cursor: help; }
 
     .phase-tab {
       padding: 5px 13px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm);
@@ -387,7 +394,7 @@
   // aus dimensions/dimension_values statt hart codiert) ───────────────
   async function loadDimensions() {
     const res = await fetch(
-      `${REST_URL}/dimensions?select=id,key,label,typ,ist_navigationsachse,ist_filterbar,reihenfolge,dimension_values(key,label,farbe,gruppe,reihenfolge)` +
+      `${REST_URL}/dimensions?select=id,key,label,typ,ist_navigationsachse,ist_filterbar,reihenfolge,erlaeuterung,dimension_values(key,label,farbe,gruppe,reihenfolge,erlaeuterung)` +
       `&order=reihenfolge&dimension_values.order=reihenfolge`,
       { headers: { Authorization: `Bearer ${getToken()}` } }
     );
@@ -470,7 +477,7 @@
 
   async function loadData() {
     const res = await fetch(
-      `${REST_URL}/process_steps?select=nr,titel,process_step_values(text_value,dimensions(key),dimension_values(key,label,farbe,gruppe))&order=nr`,
+      `${REST_URL}/process_steps?select=nr,titel,process_step_values(text_value,dimensions(key),dimension_values(key,label,farbe,gruppe,erlaeuterung))&order=nr`,
       { headers: { Authorization: `Bearer ${getToken()}` } }
     );
     if (res.status === 401) { logout(); throw new Error('Sitzung abgelaufen — bitte erneut anmelden.'); }
@@ -528,17 +535,17 @@
     for (const dim of navSingle) {
       const tabs = [`<button class="phase-tab active" data-dim="${dim.key}" data-val="alle" onclick="setNavSingle('${dim.key}','alle')">Alle</button>`]
         .concat(dim.values.map(v => `
-          <button class="phase-tab" data-dim="${dim.key}" data-val="${v.key}" onclick="setNavSingle('${dim.key}','${v.key}')">
+          <button class="phase-tab" data-dim="${dim.key}" data-val="${v.key}"${tip(v)} onclick="setNavSingle('${dim.key}','${v.key}')">
             <span class="dot" style="background:${colorOf(v)}"></span>${escapeHtml(v.label)}
           </button>`));
-      rows.push(`<div class="filter-row"><span class="filter-label">${escapeHtml(dim.label)}</span>${tabs.join('')}</div>`);
+      rows.push(`<div class="filter-row"><span class="filter-label"${tip(dim)}>${escapeHtml(dim.label)}</span>${tabs.join('')}</div>`);
     }
 
     for (const dim of navMulti) {
       const toggles = dim.values.map(v => `
-        <button class="dr-toggle active" data-dim="${dim.key}" data-val="${v.key}" style="${chipStyle(colorOf(v))}"
+        <button class="dr-toggle active" data-dim="${dim.key}" data-val="${v.key}" style="${chipStyle(colorOf(v))}"${tip(v)}
                 onclick="toggleNavMulti('${dim.key}','${v.key}')">${escapeHtml(v.label)}</button>`);
-      rows.push(`<div class="filter-row"><span class="filter-label">${escapeHtml(dim.label)}</span>${toggles.join('')}</div>`);
+      rows.push(`<div class="filter-row"><span class="filter-label"${tip(dim)}>${escapeHtml(dim.label)}</span>${toggles.join('')}</div>`);
     }
 
     // V02/V03: Gruppen-Filterzeile pro Dimension mit gepflegter gruppe – arbeitet
@@ -550,7 +557,7 @@
       const toggles = groups.map(g => `
         <button class="dr-toggle active" data-group-dim="${dim.key}" data-group="${escapeHtml(g)}"
                 onclick="toggleGroupFilter('${dim.key}', this.dataset.group)">${escapeHtml(g)}</button>`);
-      rows.push(`<div class="filter-row"><span class="filter-label">${escapeHtml(dim.label)} (Gruppe)</span>${toggles.join('')}</div>`);
+      rows.push(`<div class="filter-row"><span class="filter-label"${tip(dim)}>${escapeHtml(dim.label)} (Gruppe)</span>${toggles.join('')}</div>`);
     }
 
     // Generische Filterzeilen für ist_filterbar-Dimensionen (eigener data-fdim-Selektor statt
@@ -558,23 +565,23 @@
     for (const dim of filterSingleDims) {
       const tabs = [`<button class="phase-tab active" data-fdim="${dim.key}" data-val="alle" onclick="setFilterSingle('${dim.key}','alle')">Alle</button>`]
         .concat(dim.values.map(v => `
-          <button class="phase-tab" data-fdim="${dim.key}" data-val="${v.key}" onclick="setFilterSingle('${dim.key}','${v.key}')">
+          <button class="phase-tab" data-fdim="${dim.key}" data-val="${v.key}"${tip(v)} onclick="setFilterSingle('${dim.key}','${v.key}')">
             <span class="dot" style="background:${colorOf(v)}"></span>${escapeHtml(v.label)}
           </button>`));
-      rows.push(`<div class="filter-row"><span class="filter-label">${escapeHtml(dim.label)}</span>${tabs.join('')}</div>`);
+      rows.push(`<div class="filter-row"><span class="filter-label"${tip(dim)}>${escapeHtml(dim.label)}</span>${tabs.join('')}</div>`);
     }
 
     for (const dim of filterMultiDims) {
       const toggles = dim.values.map(v => `
-        <button class="dr-toggle active" data-fdim="${dim.key}" data-val="${v.key}" style="${chipStyle(colorOf(v))}"
+        <button class="dr-toggle active" data-fdim="${dim.key}" data-val="${v.key}" style="${chipStyle(colorOf(v))}"${tip(v)}
                 onclick="toggleFilterMulti('${dim.key}','${v.key}')">${escapeHtml(v.label)}</button>`);
-      rows.push(`<div class="filter-row"><span class="filter-label">${escapeHtml(dim.label)}</span>${toggles.join('')}</div>`);
+      rows.push(`<div class="filter-row"><span class="filter-label"${tip(dim)}>${escapeHtml(dim.label)}</span>${toggles.join('')}</div>`);
     }
 
     document.getElementById('toolbar-nav-rows').innerHTML = rows.join('');
 
     const axisDims = dims.filter(d => d.typ !== 'text');
-    const axisOptions = axisDims.map(d => `<option value="${d.key}">${escapeHtml(d.label)}</option>`).join('');
+    const axisOptions = axisDims.map(d => `<option value="${d.key}"${tip(d)}>${escapeHtml(d.label)}</option>`).join('');
     const xSelect = document.getElementById('matrix-x-select');
     const ySelect = document.getElementById('matrix-y-select');
     xSelect.innerHTML = axisOptions;
@@ -705,6 +712,14 @@
     return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   }
 
+  // D07: optionale Erläuterung (dimensions.erlaeuterung / dimension_values.erlaeuterung)
+  // als Mouse-Over. Liefert ein fertiges ` title="…"`-Attribut oder '' (kein Tooltip),
+  // damit es sich direkt in die Template-Strings einsetzen lässt.
+  function tip(obj) {
+    const text = obj?.erlaeuterung?.trim();
+    return text ? ` title="${escapeHtml(text)}"` : '';
+  }
+
   function highlight(text, term) {
     const safe = escapeHtml(text || '');
     if (!term) return safe;
@@ -788,7 +803,7 @@
 
     const headerChips = previewSingleDims.map(dim => {
       const v = (d.values[dim.key] || [])[0];
-      return v ? `<span class="chip chip-sm" style="${chipStyle(colorOf(v))}">${escapeHtml(v.label)}</span>` : '';
+      return v ? `<span class="chip chip-sm" style="${chipStyle(colorOf(v))}"${tip(v)}>${escapeHtml(v.label)}</span>` : '';
     }).join('');
 
     const previewRows = previewMultiDims.map((dim, i) => {
@@ -798,9 +813,13 @@
       if (!vals.length && !badgeVals.length) return '';
       const cls = i === 0 ? 'card-tags-primary' : 'card-tags-secondary';
       const tags = vals.map(v =>
-        `<span class="chip chip-sm" style="${chipStyle(colorOf(v))}">${highlight(v.label, searchTerm)}</span>`
+        `<span class="chip chip-sm" style="${chipStyle(colorOf(v))}"${tip(v)}>${highlight(v.label, searchTerm)}</span>`
       ).join('');
-      const badges = badgeVals.map(v => `<span class="card-op-badge">${escapeHtml(v.key)}</span>`).join('');
+      // Badge zeigt nur den Kurz-Key (z.B. "E") — ohne gepflegte Erläuterung fällt der
+      // Mouse-Over auf das volle Label zurück, damit das Kürzel nie unerklärt bleibt.
+      const badges = badgeVals.map(v =>
+        `<span class="card-op-badge"${tip(v) || ` title="${escapeHtml(v.label)}"`}>${escapeHtml(v.key)}</span>`
+      ).join('');
       return `<div class="${cls}">${tags}${badges}</div>`;
     }).join('');
 
@@ -810,10 +829,10 @@
     // noch im Detail (detailDims schließt alle navDims explizit aus). Analog zu
     // navMulti als unbeschrifteter Farb-Chip im Badge-Bereich ergänzt.
     const navBadges = navMulti.flatMap(dim => (d.values[dim.key] || []).map(v =>
-      `<span class="chip chip-sm" style="${chipStyle(colorOf(v))}">${escapeHtml(v.label)}</span>`
+      `<span class="chip chip-sm" style="${chipStyle(colorOf(v))}"${tip(v)}>${escapeHtml(v.label)}</span>`
     )).concat(extraNavSingle.flatMap(dim => {
       const v = (d.values[dim.key] || [])[0];
-      return v ? [`<span class="chip chip-sm" style="${chipStyle(colorOf(v))}">${escapeHtml(v.label)}</span>`] : [];
+      return v ? [`<span class="chip chip-sm" style="${chipStyle(colorOf(v))}"${tip(v)}>${escapeHtml(v.label)}</span>`] : [];
     })).join('');
 
     let detailHtml = '';
@@ -822,14 +841,14 @@
         if (dim.typ === 'text') {
           const text = d.values[dim.key];
           if (!text) return '';
-          return `<div class="detail-section"><div class="detail-section-label">${escapeHtml(dim.label)}</div>
+          return `<div class="detail-section"><div class="detail-section-label"${tip(dim)}>${escapeHtml(dim.label)}</div>
                     <div style="white-space:pre-line;">${highlight(text, searchTerm)}</div></div>`;
         }
         const vals = d.values[dim.key] || [];
         const inner = vals.length
-          ? vals.map(v => `<span class="chip" style="${chipStyle(colorOf(v))}">${highlight(v.label, searchTerm)}</span>`).join('')
+          ? vals.map(v => `<span class="chip" style="${chipStyle(colorOf(v))}"${tip(v)}>${highlight(v.label, searchTerm)}</span>`).join('')
           : `<span style="color:var(--c-text-4);font-size:12px;">–</span>`;
-        return `<div class="detail-section"><div class="detail-section-label">${escapeHtml(dim.label)}</div><div>${inner}</div></div>`;
+        return `<div class="detail-section"><div class="detail-section-label"${tip(dim)}>${escapeHtml(dim.label)}</div><div>${inner}</div></div>`;
       }).join('');
       detailHtml = `<div class="detail-box">${sections}</div>`;
     }
@@ -869,7 +888,7 @@
       return `<button type="button" class="matrix-step-chip${dimmedCls}" ${style} data-nr="${d.nr}" onclick="openFromMatrix(${d.nr})">#${String(d.nr).padStart(2, '0')} ${escapeHtml(d.titel)}</button>`;
     };
 
-    const head = `<tr><th></th>${yDim.values.map(yv => `<th>${escapeHtml(yv.label)}</th>`).join('')}</tr>`;
+    const head = `<tr><th></th>${yDim.values.map(yv => `<th${tip(yv)}>${escapeHtml(yv.label)}</th>`).join('')}</tr>`;
     const body = xDim.values.map(xv => {
       const cells = yDim.values.map(yv => {
         const steps = stepsFor(xv, yv);
@@ -879,7 +898,7 @@
         const hasVisibleHit = steps.some(d => !isDimmed(d));
         return `<td class="${hasVisibleHit ? 'matrix-hit' : ''}">${steps.map(chipFor).join('')}</td>`;
       }).join('');
-      return `<tr><th>${escapeHtml(xv.label)}</th>${cells}</tr>`;
+      return `<tr><th${tip(xv)}>${escapeHtml(xv.label)}</th>${cells}</tr>`;
     }).join('');
 
     return `<div class="matrix-wrap"><table class="matrix-table"><thead>${head}</thead><tbody>${body}</tbody></table></div>`;
@@ -931,7 +950,7 @@
       const headerStyle = sectionValue ? chipStyle(colorOf(sectionValue)) : '';
       const header = sectionValue
         ? `<div class="phase-section-header" style="${headerStyle}border-left-color:${colorOf(sectionValue)};">
-             <span class="phase-section-title">${escapeHtml(sectionValue.label)}</span>
+             <span class="phase-section-title"${tip(sectionValue)}>${escapeHtml(sectionValue.label)}</span>
              <span class="phase-section-count">${countLabel}</span>
            </div>`
         : '';

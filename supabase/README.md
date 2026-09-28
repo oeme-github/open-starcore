@@ -153,8 +153,8 @@ python3 -m http.server 8095
 
 Im Editor (`editor-db/index.html`) zwischen „Einträge" und „Dimensionen"
 umschalten (Sidebar-Tabs). Dort lassen sich neue Dimensionen anlegen
-(Key/Label/Typ/Reihenfolge/Farbe/Navigationsachse/Filterbar) sowie
-bestehende bearbeiten/löschen, und die Werte einer Dimension pflegen
+(Key/Label/Erläuterung/Typ/Reihenfolge/Farbe/Navigationsachse/Filterbar)
+sowie bestehende bearbeiten/löschen, und die Werte einer Dimension pflegen
 (bearbeiten/löschen, nicht nur ergänzen wie im Eintrags-Formular).
 Dimensionen anlegen/ändern/löschen erfordert laut Schema die Rolle
 `admin`, nicht nur `editor` (`"Admins verwalten Dimensionen"`-Policy) — mit
@@ -174,6 +174,18 @@ vorgesehen und im Editor bei `typ=text` ausgeblendet (eine
 Text-Dimension mit gesetztem Navigationsachse- oder Filterbar-Flag würde
 sonst ohne jede UI-Rückmeldung aus dem Viewer verschwinden, siehe
 `detailDims` in `viewer-db/index.html`).
+
+**Erläuterung (Mouse-Over):** Dimensionen und einzelne Werte haben ein
+optionales Feld `erlaeuterung` (Migration
+`20260928090000_add_erlaeuterung.sql`). Ist es gefüllt, zeigt der Viewer
+den Text beim Überfahren mit der Maus (`title`-Attribut) — für
+Dimensionen an Filterzeilen-/Detail-Beschriftung und Matrix-Achsenauswahl,
+für Werte an Tabs, Filter-Chips, Karten-Chips, Badges und Matrix-Köpfen.
+Beschriftungen mit Erläuterung sind dezent gepunktet unterstrichen. Leer =
+kein Mouse-Over. Das Eintrags-Formular im Editor zeigt dieselben Texte.
+Badges, die nur den Kurz-Key eines Werts zeigen (z.B. „E"), fallen ohne
+Erläuterung auf das volle Label als Mouse-Over zurück. Einschränkung:
+`title`-Tooltips erscheinen auf Touch-Geräten nicht.
 
 ## Mitglieder-Verwaltung im Editor
 
