@@ -7,6 +7,23 @@ einzelnen Änderungen stehen zusätzlich in den (bewusst ausführlichen) Commit-
 
 ---
 
+## [2026-09-28] — Viewer: Filter einklappbar, Einleitungstext im Header (D08)
+
+### Added
+- Viewer (PR #8): Filterzeilen per Knopf „Filter" ein-/ausklappbar; Suche und Karten/Matrix
+  bleiben sichtbar, eingeklappt zeigt ein Zähler die aktiven Filter. Zustand pro Browser
+  (`localStorage`). Nutzerwunsch.
+- open-starcore_D08 (PR #9): optionaler Einleitungstext im Viewer-Header nach Vorbild der
+  ursprünglichen Prozesskarte — Einzeiler (auch im Druck) plus aufklappbarer Kasten mit eigener
+  Überschrift, Text mit Absätzen und `**fett**`, alles escaped. Migration
+  `20260928100000_add_workgroup_einleitung.sql` (`workgroups.einleitung_kurz/_titel/_text`);
+  Pflege im Editor unter „Einstellungen" (admin) ausschließlich über die security-definer-RPC
+  `set_workgroup_einleitung` — `workgroups` behält bewusst keine Schreib-Policy.
+- Rollout auf alle drei `inabox`-Instanzen (`10d1dfd`): Migration zuerst, dann Code; je Instanz
+  Titel, Ports, neue Spalten, REST und RPC-Ablehnung ohne Login geprüft.
+
+---
+
 ## [2026-09-28] — Mouse-Over-Erläuterung (D07), Editor-Hilfeseite (D04)
 
 ### Added

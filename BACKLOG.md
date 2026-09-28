@@ -8,7 +8,8 @@ verschoben (einzige dauerhafte Historie, siehe `dev-notes/STANDARDS.md` §3),
 läuft vollständig aus `~/open-starcore` (Details `CHANGELOG.md`). Kommunikationswege-Frontend (8097)
 nach Reboot-Ausfall mit eigener Static-Unit reboot-fest gemacht; open-starcore_D06 (Doku: eigene Static-Unit pro Instanz) erledigt.
 open-starcore_D07 (Mouse-Over-Erläuterung) und open-starcore_D04 (Hilfeseite im Editor) umgesetzt und
-auf alle drei Instanzen ausgerollt.
+auf alle drei Instanzen ausgerollt. Danach: Viewer-Filter einklappbar (PR #8) und open-starcore_D08
+(Einleitungstext im Viewer-Header, PR #9) umgesetzt und ausgerollt.
 
 ---
 
@@ -18,7 +19,6 @@ auf alle drei Instanzen ausgerollt.
 |----|---------|-----------|--------|
 | open-starcore_D01 | Kein HTTPS/Reverse-Proxy vor den `inabox.lan`-Instanzen — für reinen Heimnetz-Zugriff aktuell akzeptabel, vor Fernzugriff/AG-Freigabe zu klären | Mittel | 📋 Offen (2026-09-04 bestätigt: bleibt vorerst Heimnetz-only, kein konkreter Anlass für Fernzugriff) |
 | open-starcore_D05 | Institutionelles SSO (Microsoft Entra ID) aktivieren — braucht eine App-Registrierung im Entra-ID-Tenant der Organisation (Client-ID/-Secret, Redirect-URI). Scaffolding liegt bereits vor, aber deaktiviert: `GOTRUE_EXTERNAL_AZURE_*` in `supabase/docker-compose.yml` (aus `SSO_AZURE_*` in `.env`), `signInWithAzure()` + Schalter `ssoAzureEnabled` in `shared/auth.js`, Aktivierungsschritte in `supabase/README.md`. Aus `INA-ePA-und-Patientenportale` T10 übernommen (2026-09-28, ursprünglich als `open-starcore_F02` vergeben) | Niedrig | ⏭ Wartet auf externe App-Registrierung |
-| open-starcore_D08 | Nutzerwunsch (2026-09-28): „In der originalen Karte haben wir im Header einen Text (auch zum Ausklappen) implementiert. Als optionales Item wäre das hier im Viewer auch hilfreich." Vorbild: `INA-ePA-und-Patientenportale/patientenpfad_interaktiv.html` (v14) — sichtbarer Einzeiler + `<details>`-Kasten mit eigener Überschrift und mehreren Absätzen, im Druck nur der Einzeiler. Generisch pro Workgroup, optional (leer = nichts anzeigen). Offen: Ablage (Spalten an `workgroups` + Pflege im Editor braucht neue Schreib-Policy/RPC für admin, `workgroups` hat bisher bewusst keine) vs. Konstante in `viewer-db/index.html` wie `APP_TITLE` | Mittel | 🔧 In Arbeit: Variante A (DB + Editor, RPC `set_workgroup_einleitung`), Branch `feature/D08-viewer-einleitung` |
 
 ---
 
