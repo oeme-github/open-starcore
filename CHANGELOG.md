@@ -7,9 +7,21 @@ einzelnen Änderungen stehen zusätzlich in den (bewusst ausführlichen) Commit-
 
 ---
 
-## [2026-09-28] — Backlog-Aufräumen
+## [2026-09-28] — Backlog-Aufräumen, Patientenpfad-Instanz umgestellt (D03)
 
 ### Changed
+- open-starcore_D03: AK-Patientenportale-Instanz („Patientenpfad") auf `inabox` vollständig auf
+  `open-starcore` umgestellt. Ist-Stand war eine seit 2026-08-15 halb umgezogene Instanz:
+  Frontend (8095, `prozesslandkarte-static.service`) und `supabase-db-1` liefen schon aus
+  `~/open-starcore` (Stand `eac8242`), `rest`/`auth`/`mailpit` noch aus `~/app` (alter
+  INA-Checkout, `c6078a5`). Statt eines dritten Klons ist `~/open-starcore` jetzt der einzige
+  Checkout: auf `main` gebracht (PR #3/#4, `APP_TITLE` per Stash erhalten), Migration
+  `20260904090000` per `psql` eingespielt, `.env` aus `~/app` übernommen (Werte identisch),
+  `rest`/`auth`/`mailpit` aus `~/open-starcore/supabase` neu erzeugt (Volume `supabase_db-data`
+  unverändert, 25 Einträge). `~/app` → `~/app.ina-alt` als Rückfallebene. Vorher DB-Sicherung
+  `~/backups/patientenpfad_20260928_145127_vor-D03.sql.gz`.
+  Auffälligkeit: beim `git pull` in `~/open-starcore` verschwand die untracked
+  `supabase/.env` (Ursache ungeklärt, Inhalt vorher als `.env.bak` gesichert).
 - `BACKLOG.md` auf offene Punkte verschlankt, erledigte Einträge (Session 2026-09-04,
   open-starcore_D02, open-starcore_F01) hierher verschoben. Dieses Changelog wird ab jetzt aktiv
   gepflegt (vorher: expliziter Verzicht-Vermerk, Historie nur in `BACKLOG.md`).
