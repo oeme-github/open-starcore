@@ -107,7 +107,7 @@
        Viewports. Stattdessen scrollt die ganze Seite; .form-actions unten
        bleibt per position:sticky relativ zum Browser-Fenster kleben (E03),
        solange ein Teil des Formulars sichtbar ist. */
-    #step-form, #dimension-form, #member-form {
+    #step-form, #dimension-form, #member-form, #settings-form {
       background: var(--c-surface); border: 1px solid var(--c-border-1); border-radius: var(--r-lg);
       padding: 20px 24px; margin: 8px 0 12px;
     }
@@ -282,6 +282,7 @@
         <button class="tab-btn active" data-view="steps" onclick="setView('steps')">Einträge</button>
         <button class="tab-btn" data-view="dimensions" onclick="setView('dimensions')">Dimensionen</button>
         <button class="tab-btn" data-view="members" onclick="setView('members')">Mitglieder</button>
+        <button class="tab-btn" data-view="settings" onclick="setView('settings')">Einstellungen</button>
       </div>
 
       <!-- E05: Akkordeon – Zeile anklicken klappt das Formular direkt darunter
@@ -320,6 +321,37 @@
         <p id="members-non-admin-hint" class="field-hint" style="display:none;">Mitglieder verwalten erfordert die Rolle <code>admin</code>.</p>
         <div id="new-member-slot"></div>
         <div class="step-list" id="member-list"></div>
+      </div>
+
+      <!-- D08: Einstellungen der Workgroup, aktuell nur der optionale
+           Einleitungstext im Viewer-Header. Schreiben nur über die RPC
+           set_workgroup_einleitung (admin), workgroups selbst hat keine
+           Schreib-Policy. Kein Akkordeon — ein einziges festes Formular. -->
+      <div id="settings-view" style="display:none;">
+        <div class="sidebar-header"><h2>Einstellungen</h2></div>
+        <form id="settings-form" onsubmit="return onSaveSettings(event)">
+          <p class="field-hint" style="margin-bottom:16px;">Einleitungstext oben im Viewer — alles optional, leere Felder werden
+            nicht angezeigt. Änderungen erfordern die Rolle <code>admin</code>.</p>
+          <div class="field">
+            <label for="settings-einleitung-kurz">Einzeiler</label>
+            <input type="text" id="settings-einleitung-kurz">
+            <p class="field-hint">Immer sichtbar unter der Überschrift, auch im Druck. Ein Satz zur Einordnung.</p>
+          </div>
+          <div class="field">
+            <label for="settings-einleitung-titel">Überschrift des Aufklapp-Kastens</label>
+            <input type="text" id="settings-einleitung-titel" placeholder="Mehr erfahren">
+          </div>
+          <div class="field">
+            <label for="settings-einleitung-text">Text im Aufklapp-Kasten</label>
+            <textarea id="settings-einleitung-text" rows="10"></textarea>
+            <p class="field-hint">Leerzeile = neuer Absatz, <code>**fett**</code> für Hervorhebungen. Leer lassen = kein Kasten.</p>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="settings-save-btn">Speichern</button>
+          </div>
+          <div class="form-message error" id="settings-form-error"></div>
+          <div class="form-message success" id="settings-form-success"></div>
+        </form>
       </div>
 
       <div id="editor-empty" class="empty-hint" style="display:none;">Eintrag in der Liste auswählen oder „+ Neu" klicken.</div>
@@ -546,7 +578,7 @@
     document.getElementById('app').style.display = 'block';
     document.getElementById('session-email').textContent = sessionStorage.getItem('user_email') || '';
 
-    const wgRes = await apiFetch('/workgroups?select=id,key,name&limit=1');
+    const wgRes = await apiFetch('/workgroups?select=id,key,name,einleitung_kurz,einleitung_titel,einleitung_text&limit=1');
     const workgroups = await wgRes.json();
     if (!workgroups.length) {
       document.getElementById('step-list').innerHTML =
@@ -578,6 +610,7 @@
     document.getElementById('members-non-admin-hint').style.display = myRole === 'admin' ? 'none' : 'block';
     document.getElementById('member-list').style.display = myRole === 'admin' ? 'flex' : 'none';
 
+    renderSettingsForm();
     await reloadDimensions();
     await reloadSteps();
     await loadAuditActors();
@@ -936,6 +969,8 @@
   // E05: zeigt den Leer-Hinweis nur, wenn in der aktiven Ansicht weder eine
   // bestehende Zeile aufgeklappt noch ein neuer Eintrag in Erstellung ist.
   function updateEmptyHint() {
+    // Einstellungen haben keine Liste/kein Akkordeon, also auch keinen Leer-Hinweis.
+    if (activeView === 'settings') { emptyHintEl.style.display = 'none'; return; }
     const isEmpty = activeView === 'steps'
       ? (!currentStepId && !creatingNewStep)
       : activeView === 'dimensions'
@@ -960,6 +995,7 @@
     document.getElementById('steps-view').style.display = view === 'steps' ? 'block' : 'none';
     document.getElementById('dimensions-view').style.display = view === 'dimensions' ? 'block' : 'none';
     document.getElementById('members-view').style.display = view === 'members' ? 'block' : 'none';
+    document.getElementById('settings-view').style.display = view === 'settings' ? 'block' : 'none';
 
     // E05: Akkordeon-Zustand der jeweils anderen Ansicht beim Wechsel schließen,
     // sonst bliebe eine Zeile optisch "aktiv" markiert, ohne dass ihr Formular
@@ -1522,6 +1558,54 @@
     stepFormEl.style.display = 'none';
     await reloadSteps();
     updateEmptyHint();
+  }
+
+  // ── Einstellungen: Einleitungstext im Viewer-Header (D08) ────────────
+  function renderSettingsForm() {
+    const isAdmin = myRole === 'admin';
+    for (const [id, col] of [['settings-einleitung-kurz', 'einleitung_kurz'],
+                             ['settings-einleitung-titel', 'einleitung_titel'],
+                             ['settings-einleitung-text', 'einleitung_text']]) {
+      const el = document.getElementById(id);
+      el.value = workgroup[col] ?? '';
+      el.disabled = !isAdmin;
+    }
+    const saveBtn = document.getElementById('settings-save-btn');
+    saveBtn.disabled = !isAdmin;
+    saveBtn.title = isAdmin ? '' : 'Einstellungen ändern erfordert die Rolle admin.';
+  }
+
+  async function onSaveSettings(event) {
+    event.preventDefault();
+    const errorBox = document.getElementById('settings-form-error');
+    const successBox = document.getElementById('settings-form-success');
+    const saveBtn = document.getElementById('settings-save-btn');
+    errorBox.style.display = 'none';
+    successBox.style.display = 'none';
+    saveBtn.disabled = true;
+    try {
+      const payload = {
+        p_workgroup_id: workgroup.id,
+        p_kurz: document.getElementById('settings-einleitung-kurz').value,
+        p_titel: document.getElementById('settings-einleitung-titel').value,
+        p_text: document.getElementById('settings-einleitung-text').value,
+      };
+      const res = await apiFetch('/rpc/set_workgroup_einleitung', { method: 'POST', body: JSON.stringify(payload) });
+      if (!res.ok) throw new Error(`Speichern fehlgeschlagen (HTTP ${res.status}). ${httpErrorHint(res.status, 'admin')}`);
+      // Serverseitig werden leere Felder zu null und Ränder getrimmt — lokal gleich nachziehen.
+      workgroup.einleitung_kurz = payload.p_kurz.trim() || null;
+      workgroup.einleitung_titel = payload.p_titel.trim() || null;
+      workgroup.einleitung_text = payload.p_text.trim() || null;
+      renderSettingsForm();
+      successBox.textContent = 'Gespeichert. Im Viewer nach dem nächsten Neuladen sichtbar.';
+      successBox.style.display = 'block';
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.style.display = 'block';
+    } finally {
+      saveBtn.disabled = myRole !== 'admin';
+    }
+    return false;
   }
 
   // ── Mitglieder verwalten (T12) ──────────────────────────────────────

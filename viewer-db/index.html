@@ -189,7 +189,23 @@
       cursor: pointer; transition: all 0.12s;
     }
     .btn-export:hover { border-color: var(--c-border-3); color: var(--c-text-1); }
+    /* D08: Einleitungstext im Header (Vorbild: scope-note/scope-details der
+       ursprünglichen Prozesskarte). Im Druck nur der Einzeiler (#print-einleitung),
+       da .page-header dort komplett ausgeblendet ist. */
+    .page-header p.einleitung-kurz { color: var(--c-text-2); margin-top: 8px; max-width: 900px; line-height: 1.45; font-size: 13px; }
+    .einleitung-details { margin-top: 6px; max-width: 900px; }
+    .einleitung-details summary { font-size: 12px; color: var(--c-text-3); cursor: pointer; user-select: none; }
+    .einleitung-details summary:hover { color: var(--c-text-1); }
+    .einleitung-body {
+      margin-top: 8px; padding: 12px 14px; background: var(--c-bg);
+      border: 1px solid var(--c-border-1); border-radius: var(--r-md);
+    }
+    .page-header .einleitung-body p { font-size: 12.5px; line-height: 1.5; color: var(--c-text-2); margin: 0; }
+    .page-header .einleitung-body p + p { margin-top: 8px; }
+    .einleitung-body strong { color: var(--c-text-1); }
+    .print-only { display: none; }
     @media print {
+      .print-only:not(:empty) { display: block; font-size: 11px; color: #333; margin-bottom: 10px; }
       .login-screen, .page-header, .toolbar, .export-bar, .session-box { display: none !important; }
       body { margin: 12px; }
       .prozess-card { break-inside: avoid; }
@@ -281,6 +297,13 @@
       <div>
         <h1><span id="app-title-text"></span> <span class="badge-proto">DB-Prototyp</span></h1>
         <p id="breadcrumb">lädt …</p>
+        <!-- D08: optionaler Einleitungstext der Workgroup (workgroups.einleitung_*),
+             bleibt ausgeblendet, solange nichts gepflegt ist (renderEinleitung). -->
+        <p id="einleitung-kurz" class="einleitung-kurz" hidden></p>
+        <details id="einleitung-details" class="einleitung-details" hidden>
+          <summary id="einleitung-titel"></summary>
+          <div id="einleitung-body" class="einleitung-body"></div>
+        </details>
       </div>
       <div class="session-box">
         <div>Angemeldet als <span class="email" id="session-email"></span></div>
@@ -314,6 +337,7 @@
         <button class="btn-export" onclick="exportCSV()" title="Sichtbare Einträge als CSV">↓ CSV</button>
         <button class="btn-export" onclick="exportJSON()" title="Sichtbare Einträge als JSON">↓ JSON</button>
       </div>
+      <div id="print-einleitung" class="print-only"></div>
       <div id="karten"></div>
     </div>
   </div>
@@ -501,13 +525,35 @@
   // (grammatikalisch nicht perfekt, aber generisch statt hart codiert).
   const AXIS_LABEL_PLURAL = { phase: 'Phasen', datenraum: 'Datenräume' };
 
-  async function loadWorkgroupName() {
-    const res = await fetch(`${REST_URL}/workgroups?select=name&limit=1`, {
+  async function loadWorkgroup() {
+    const res = await fetch(`${REST_URL}/workgroups?select=name,einleitung_kurz,einleitung_titel,einleitung_text&limit=1`, {
       headers: { Authorization: `Bearer ${getToken()}` },
     });
-    if (!res.ok) return '';
+    if (!res.ok) return {};
     const [wg] = await res.json();
-    return wg?.name || '';
+    return wg || {};
+  }
+
+  // D08: Einleitungstext rendern. Bewusst kein HTML aus der DB — alles wird
+  // escaped, danach nur zwei Formatierungen erlaubt: Leerzeile = neuer Absatz,
+  // **fett** (wie die fett gesetzten Einstiege der ursprünglichen Karte).
+  function formatEinleitung(text) {
+    return text.trim().split(/\n\s*\n/).map(par =>
+      `<p>${escapeHtml(par.trim()).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>')}</p>`
+    ).join('');
+  }
+
+  function renderEinleitung(wg) {
+    const kurz = (wg.einleitung_kurz || '').trim();
+    const text = (wg.einleitung_text || '').trim();
+    const kurzEl = document.getElementById('einleitung-kurz');
+    kurzEl.textContent = kurz;
+    kurzEl.hidden = !kurz;
+    document.getElementById('print-einleitung').textContent = kurz;
+    const details = document.getElementById('einleitung-details');
+    details.hidden = !text;
+    document.getElementById('einleitung-titel').textContent = (wg.einleitung_titel || '').trim() || 'Mehr erfahren';
+    document.getElementById('einleitung-body').innerHTML = text ? formatEinleitung(text) : '';
   }
 
   function renderBreadcrumb(workgroupName) {
@@ -527,7 +573,9 @@
     try {
       setupDimensions(await loadDimensions());
       data = await loadData();
-      renderBreadcrumb(await loadWorkgroupName());
+      const wg = await loadWorkgroup();
+      renderBreadcrumb(wg.name || '');
+      renderEinleitung(wg);
     } catch (err) {
       document.getElementById('karten').innerHTML = `<div class="empty-hint">${escapeHtml(err.message)}</div>`;
       document.getElementById('counter').textContent = '';
