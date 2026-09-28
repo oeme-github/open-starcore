@@ -426,6 +426,22 @@ jede weitere Instanz auf demselben Host `COMPOSE_PROJECT_NAME` explizit
 setzen (z.B. in der jeweiligen `.env` oder vor jedem `docker
 compose`/`start.sh`-Aufruf exportieren).
 
+**Jede Instanz braucht ihre eigene Static-Unit.** Die Backend-Container
+kommen nach einem Reboot über `restart: unless-stopped` von selbst zurück,
+das Frontend nicht: `start.sh` startet `python3 -m http.server` nur per
+`nohup`, und dieser Prozess übersteht keinen Neustart. Deshalb für jede
+weitere Instanz eine eigene Kopie der Unit aus „Dauerhaftes Deployment"
+oben anlegen und darin drei Stellen anpassen:
+
+- **Dateiname**, z.B. `/etc/systemd/system/<instanz>-static.service`
+- **`WorkingDirectory`**: der Checkout dieser Instanz
+- **Port in `ExecStart`**: der `STATIC_PORT` dieser Instanz
+
+Danach `sudo systemctl daemon-reload && sudo systemctl enable --now
+<instanz>-static.service` und mit `systemctl is-enabled`/`is-active`
+prüfen. Ein nur per `start.sh` gestartetes Frontend fällt sonst erst beim
+nächsten Reboot auf.
+
 ## Smoke-Test (durchgeführt, nicht dauerhaft im Stack)
 
 Signup → Mailpit-Bestätigungsmail → `/verify` → JWT mit `role: authenticated`

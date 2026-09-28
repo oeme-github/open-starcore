@@ -21,6 +21,9 @@ einzelnen Änderungen stehen zusätzlich in den (bewusst ausführlichen) Commit-
   verlinkt — Rollen, Einträge, Mitglieder, Wirkung der Dimensionsfelder im Viewer, FAQ.
 - Rollout auf alle drei `inabox`-Instanzen: Migration zuerst per `psql`, danach Code per
   `git stash`/`pull`/`stash pop`; Titel, Ports, Hilfeseite und neue Spalte je Instanz geprüft.
+- open-starcore_D06: `supabase/README.md`, Abschnitt „Mehrfachbetrieb": jede Instanz braucht
+  eine eigene Static-Unit (Dateiname, `WorkingDirectory`, Port), weil das per `nohup` aus
+  `start.sh` gestartete Frontend keinen Reboot übersteht. Anlass: Kommunikationswege-Ausfall.
 
 ---
 
