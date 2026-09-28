@@ -107,6 +107,24 @@
        Viewports. Stattdessen scrollt die ganze Seite; .form-actions unten
        bleibt per position:sticky relativ zum Browser-Fenster kleben (E03),
        solange ein Teil des Formulars sichtbar ist. */
+    .settings-help {
+      margin-top: 12px; padding: 16px 20px; font-size: 12.5px; line-height: 1.5; color: var(--c-text-2);
+      background: #F9FAFB; border: 1px solid var(--c-border-1); border-radius: var(--r-lg);
+    }
+    .settings-help h3 {
+      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--c-text-4); margin-bottom: 10px;
+    }
+    .settings-help dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; margin-bottom: 12px; }
+    .settings-help dt { font-weight: 600; color: var(--c-text-1); }
+    .settings-help p { margin: 10px 0 6px; }
+    .settings-help table { border-collapse: collapse; }
+    .settings-help th, .settings-help td { text-align: left; padding: 4px 12px 4px 0; border-bottom: 1px solid var(--c-border-1); }
+    .settings-help th { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--c-text-4); }
+    .settings-help pre {
+      white-space: pre-wrap; font-size: 12px; padding: 8px 10px; background: var(--c-surface);
+      border: 1px solid var(--c-border-1); border-radius: var(--r-sm);
+    }
+    @media (max-width: 600px) { .settings-help dl { grid-template-columns: 1fr; } }
     #step-form, #dimension-form, #member-form, #settings-form {
       background: var(--c-surface); border: 1px solid var(--c-border-1); border-radius: var(--r-lg);
       padding: 20px 24px; margin: 8px 0 12px;
@@ -352,6 +370,35 @@
           <div class="form-message error" id="settings-form-error"></div>
           <div class="form-message success" id="settings-form-success"></div>
         </form>
+
+        <!-- Kurzanleitung zum Einleitungstext direkt unter dem Formular (Nutzerwunsch):
+             Formatierung ist bewusst minimal und escaped, siehe formatEinleitung() im Viewer. -->
+        <div class="settings-help">
+          <h3>So funktioniert der Einleitungstext</h3>
+          <dl>
+            <dt>Einzeiler</dt>
+            <dd>Ein Satz zur Einordnung. Steht im Viewer immer sichtbar unter der Überschrift und erscheint auch beim Drucken.</dd>
+            <dt>Überschrift</dt>
+            <dd>Beschriftung des Aufklapp-Kastens, z.&nbsp;B. „Was diese Karte ist – und was nicht". Leer = „Mehr erfahren".</dd>
+            <dt>Text</dt>
+            <dd>Inhalt des Kastens, erst nach Klick auf die Überschrift sichtbar. Leer = kein Kasten.</dd>
+          </dl>
+          <p><b>Formatierung im Text</b> (nur im Kasten-Text, Einzeiler und Überschrift bleiben reiner Text):</p>
+          <table>
+            <thead><tr><th>Eingabe</th><th>Ergebnis</th></tr></thead>
+            <tbody>
+              <tr><td><code>**Was sie ist:**</code></td><td><strong>Was sie ist:</strong> (fett)</td></tr>
+              <tr><td>Leerzeile</td><td>neuer Absatz</td></tr>
+              <tr><td>einfacher Zeilenumbruch</td><td>Zeilenumbruch im selben Absatz</td></tr>
+            </tbody>
+          </table>
+          <p>HTML-Tags wie <code>&lt;b&gt;</code> funktionieren nicht, sie erscheinen im Viewer als normaler Text.</p>
+          <p><b>Beispiel:</b></p>
+          <pre>**Was sie ist:** Ein abstraktes Referenzmodell des Patientenpfads.
+
+**Was sie nicht ist:** Kein Werkzeug zur Prozessmodellierung.</pre>
+          <p>Nach dem Speichern im Viewer die Seite neu laden, dann ist die Änderung sichtbar.</p>
+        </div>
       </div>
 
       <div id="editor-empty" class="empty-hint" style="display:none;">Eintrag in der Liste auswählen oder „+ Neu" klicken.</div>
