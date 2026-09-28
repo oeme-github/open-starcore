@@ -132,6 +132,13 @@
       background: transparent; color: var(--c-text-3); font-size: 12px; font-weight: 500; cursor: pointer;
     }
     .view-btn.active { background: var(--c-text-1); border-color: var(--c-text-1); color: #fff; }
+    /* Filterzeilen ein-/ausklappen: bei vielen filterbaren Dimensionen nimmt die
+       (sticky) Toolbar sonst einen Großteil des Bildschirms ein. */
+    .filter-toggle { display: flex; align-items: center; gap: 6px; }
+    .filter-toggle .count {
+      background: #4F46E5; color: #fff; border-radius: 10px; padding: 0 6px; font-size: 10px; font-weight: 700;
+    }
+    .toolbar.filters-collapsed #toolbar-nav-rows { display: none; }
 
     .matrix-controls select {
       padding: 4px 8px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm); font-size: 12px;
@@ -281,9 +288,11 @@
       </div>
     </div>
 
-    <div class="toolbar">
+    <div class="toolbar" id="toolbar">
       <div id="toolbar-nav-rows"></div>
       <div class="filter-row">
+        <button type="button" id="filter-toggle" class="view-btn filter-toggle" onclick="toggleFilterRows()"
+                aria-controls="toolbar-nav-rows" aria-expanded="true"></button>
         <input type="search" id="search" class="search-input" placeholder="Suche …" oninput="onSearch(this.value)">
         <div class="view-switch">
           <button id="view-cards-btn" class="view-btn active" onclick="setView('cards')">Karten</button>
@@ -912,7 +921,43 @@
   }
 
   // ── Render ───────────────────────────────────────────────────────
+  // ── Filterzeilen ein-/ausklappen ──────────────────────────────────
+  // Zustand nur als Komfort pro Browser gemerkt (localStorage kann in privaten
+  // Fenstern fehlen/werfen — dann einfach ausgeklappt starten).
+  const FILTERS_COLLAPSED_KEY = 'starcore-viewer-filters-collapsed';
+  let filtersCollapsed = false;
+  try { filtersCollapsed = localStorage.getItem(FILTERS_COLLAPSED_KEY) === '1'; } catch (e) { /* egal */ }
+
+  function toggleFilterRows() {
+    filtersCollapsed = !filtersCollapsed;
+    try { localStorage.setItem(FILTERS_COLLAPSED_KEY, filtersCollapsed ? '1' : '0'); } catch (e) { /* egal */ }
+    updateFilterToggle();
+  }
+
+  // Zählt Filterzeilen, die gerade etwas ausblenden — damit eingeklappte, aber
+  // aktive Filter sichtbar bleiben (sonst wirken gedimmte Karten grundlos).
+  function activeFilterCount() {
+    const singleActive = (dimList, active) => dimList.filter(d => active[d.key] !== 'alle').length;
+    const multiActive = (dimList, active) => dimList.filter(d => active[d.key].size < d.values.length).length;
+    const groupActive = groupDims.filter(d =>
+      activeGroups[d.key].size < new Set(d.values.map(v => v.gruppe || 'Sonstige')).size).length;
+    return singleActive(navSingle, activeNavSingle) + multiActive(navMulti, activeNavMulti)
+      + singleActive(filterSingleDims, activeFilterSingle) + multiActive(filterMultiDims, activeFilterMulti)
+      + groupActive;
+  }
+
+  function updateFilterToggle() {
+    const btn = document.getElementById('filter-toggle');
+    const hasRows = document.getElementById('toolbar-nav-rows').children.length > 0;
+    btn.style.display = hasRows ? '' : 'none';
+    document.getElementById('toolbar').classList.toggle('filters-collapsed', filtersCollapsed && hasRows);
+    btn.setAttribute('aria-expanded', String(!filtersCollapsed));
+    const count = activeFilterCount();
+    btn.innerHTML = `${filtersCollapsed ? '▸' : '▾'} Filter${count ? ` <span class="count" title="${count} Filter aktiv">${count}</span>` : ''}`;
+  }
+
   function render() {
+    updateFilterToggle();
     if (!data.length) {
       document.getElementById('counter').textContent = '';
       document.getElementById('karten').innerHTML =
